@@ -26,6 +26,87 @@
     </header>
 
     <main>
+      <section class="social-studio" id="socialStudio">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Hoy: Instagram + Facebook</p>
+            <h2>Social Composer</h2>
+          </div>
+          <span class="pill">Local</span>
+        </div>
+
+        <form id="socialForm" class="social-form">
+          <label>
+            Que quieres publicar
+            <textarea id="socialIdea" rows="5" placeholder="Escribe la idea en bruto. Ej. estoy creando un asistente que me ayuda con contenido, inversion y negocios..."></textarea>
+          </label>
+
+          <div class="field-row">
+            <label>
+              Objetivo
+              <select id="socialGoal">
+                <option>Marca personal</option>
+                <option>Ventas</option>
+                <option>Educacion</option>
+                <option>Comunidad</option>
+                <option>Actualizacion rapida</option>
+              </select>
+            </label>
+            <label>
+              Formato
+              <select id="socialFormat">
+                <option>Post</option>
+                <option>Reel</option>
+                <option>Historia</option>
+                <option>Carrusel</option>
+              </select>
+            </label>
+          </div>
+
+          <fieldset class="platforms">
+            <legend>Publicar en</legend>
+            <label><input type="checkbox" id="useInstagram" checked> Instagram</label>
+            <label><input type="checkbox" id="useFacebook" checked> Facebook</label>
+          </fieldset>
+
+          <div class="action-row">
+            <button type="submit">Generar</button>
+            <button type="button" class="secondary" id="saveDraft">Guardar</button>
+          </div>
+        </form>
+
+        <div class="output-grid">
+          <article class="output-card" id="instagramCard">
+            <div class="output-head">
+              <strong>Instagram</strong>
+              <button type="button" data-copy="instagram">Copiar</button>
+            </div>
+            <pre id="instagramOutput">Tu caption de Instagram aparecera aqui.</pre>
+          </article>
+
+          <article class="output-card" id="facebookCard">
+            <div class="output-head">
+              <strong>Facebook</strong>
+              <button type="button" data-copy="facebook">Copiar</button>
+            </div>
+            <pre id="facebookOutput">Tu post de Facebook aparecera aqui.</pre>
+          </article>
+        </div>
+
+        <div class="action-row sticky-actions">
+          <button type="button" id="shareInstagram">Compartir Instagram</button>
+          <button type="button" class="secondary" id="shareFacebook">Compartir Facebook</button>
+        </div>
+
+        <section class="draft-panel">
+          <div class="output-head">
+            <strong>Borradores guardados</strong>
+            <span id="draftCount">0</span>
+          </div>
+          <div id="draftList" class="draft-list"></div>
+        </section>
+      </section>
+
       <section class="hero-card">
         <div>
           <p class="eyebrow">Resultado principal</p>
@@ -150,9 +231,161 @@
 
     <footer>
       <span>Research OS Mobile</span>
-      <span>Actualizado: 2026-06-07</span>
+      <span>Actualizado: 2026-06-08</span>
     </footer>
     <script>
+      const draftKey = "research-os-social-mobile-v1";
+      let latestPosts = { instagram: "", facebook: "" };
+
+      function getDrafts() {
+        try {
+          return JSON.parse(localStorage.getItem(draftKey)) || [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveDrafts(drafts) {
+        localStorage.setItem(draftKey, JSON.stringify(drafts.slice(0, 20)));
+      }
+
+      function makeCTA(goal) {
+        const map = {
+          "Marca personal": "Si esto te interesa, sigueme porque voy a documentar el proceso.",
+          "Ventas": "Si quieres algo parecido para tu negocio, escribeme.",
+          "Educacion": "Guardalo para revisarlo con calma.",
+          "Comunidad": "Que opinas? Te leo.",
+          "Actualizacion rapida": "Voy a seguir compartiendo avances."
+        };
+        return map[goal] || map["Marca personal"];
+      }
+
+      function makeTags(idea) {
+        const words = idea
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, " ")
+          .split(/\s+/)
+          .filter((word) => word.length > 4)
+          .slice(0, 5);
+        const unique = Array.from(new Set(words));
+        return unique.length ? unique.map((word) => `#${word}`).join(" ") : "#negocios #contenido #ia";
+      }
+
+      function buildPosts() {
+        const idea = document.getElementById("socialIdea").value.trim() || "Estoy construyendo algo nuevo y voy a documentar el proceso.";
+        const goal = document.getElementById("socialGoal").value;
+        const format = document.getElementById("socialFormat").value;
+        const cta = makeCTA(goal);
+        const tags = makeTags(idea);
+
+        latestPosts.instagram = `${idea}\n\n${format === "Reel" ? "Idea para video: muestra el resultado primero, luego el proceso.\n\n" : ""}${cta}\n\n${tags}`;
+        latestPosts.facebook = `${idea}\n\n${cta}\n\nContexto: ${goal}. Formato sugerido: ${format}.`;
+
+        document.getElementById("instagramOutput").textContent = latestPosts.instagram;
+        document.getElementById("facebookOutput").textContent = latestPosts.facebook;
+        document.getElementById("instagramCard").hidden = !document.getElementById("useInstagram").checked;
+        document.getElementById("facebookCard").hidden = !document.getElementById("useFacebook").checked;
+      }
+
+      async function copyPost(type) {
+        const text = latestPosts[type] || document.getElementById(`${type}Output`).textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast(`${type === "instagram" ? "Instagram" : "Facebook"} copiado.`);
+        } catch {
+          showToast("No pude copiar. Mantén presionado el texto y copialo manualmente.");
+        }
+      }
+
+      async function sharePost(type) {
+        const text = latestPosts[type] || document.getElementById(`${type}Output`).textContent;
+        if (navigator.share) {
+          try {
+            await navigator.share({ text });
+            return;
+          } catch {
+            return;
+          }
+        }
+        await copyPost(type);
+      }
+
+      function storeCurrentDraft() {
+        buildPosts();
+        const drafts = getDrafts();
+        drafts.unshift({
+          createdAt: new Date().toISOString(),
+          idea: document.getElementById("socialIdea").value.trim(),
+          instagram: latestPosts.instagram,
+          facebook: latestPosts.facebook
+        });
+        saveDrafts(drafts);
+        renderDrafts();
+        showToast("Borrador guardado en este telefono.");
+      }
+
+      function renderDrafts() {
+        const drafts = getDrafts();
+        document.getElementById("draftCount").textContent = String(drafts.length);
+        const list = document.getElementById("draftList");
+        if (!drafts.length) {
+          list.innerHTML = "<p>No hay borradores todavia.</p>";
+          return;
+        }
+        list.innerHTML = drafts.slice(0, 5).map((draft, index) => `
+          <button type="button" data-draft="${index}">
+            <strong>${new Date(draft.createdAt).toLocaleDateString()}</strong>
+            <span>${escapeText(draft.idea || draft.instagram).slice(0, 90)}</span>
+          </button>
+        `).join("");
+      }
+
+      function escapeText(value) {
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function showToast(message) {
+        let toast = document.querySelector(".toast");
+        if (!toast) {
+          toast = document.createElement("div");
+          toast.className = "toast";
+          document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.classList.add("show");
+        window.setTimeout(() => toast.classList.remove("show"), 2200);
+      }
+
+      document.getElementById("socialForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        buildPosts();
+        showToast("Posts generados.");
+      });
+
+      document.getElementById("saveDraft").addEventListener("click", storeCurrentDraft);
+      document.getElementById("shareInstagram").addEventListener("click", () => sharePost("instagram"));
+      document.getElementById("shareFacebook").addEventListener("click", () => sharePost("facebook"));
+      document.querySelectorAll("[data-copy]").forEach((button) => {
+        button.addEventListener("click", () => copyPost(button.dataset.copy));
+      });
+      document.getElementById("draftList").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-draft]");
+        if (!button) return;
+        const draft = getDrafts()[Number(button.dataset.draft)];
+        if (!draft) return;
+        latestPosts = { instagram: draft.instagram, facebook: draft.facebook };
+        document.getElementById("socialIdea").value = draft.idea || "";
+        document.getElementById("instagramOutput").textContent = draft.instagram;
+        document.getElementById("facebookOutput").textContent = draft.facebook;
+        showToast("Borrador cargado.");
+      });
+      renderDrafts();
+
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           navigator.serviceWorker.register("./sw.js");
