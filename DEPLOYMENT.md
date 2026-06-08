@@ -11,6 +11,7 @@ https://github.com/Jorgelsa89/research-os-mobile-brief
 Scope:
 
 - Sanitized mobile Research OS brief.
+- Android-installable PWA.
 - No real portfolio.
 - No local private paths.
 - No credentials.
@@ -20,4 +21,3 @@ Scope:
 Deployment method:
 
 - GitHub Pages from `main` branch root.
-

@@ -1,0 +1,49 @@
+{
+  "name": "Research OS Mobile",
+  "short_name": "Research OS",
+  "description": "Sanitized mobile brief for Research OS scores, watchlist and project network.",
+  "id": "/research-os-mobile-brief/",
+  "start_url": "/research-os-mobile-brief/",
+  "scope": "/research-os-mobile-brief/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090c10",
+  "theme_color": "#090c10",
+  "categories": ["finance", "productivity", "business"],
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Brief NVIDIA",
+      "short_name": "NVIDIA",
+      "description": "Open the current Research OS mobile brief.",
+      "url": "/research-os-mobile-brief/",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
