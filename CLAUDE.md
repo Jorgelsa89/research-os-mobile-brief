@@ -75,6 +75,39 @@ Cuando una frase no coincide con ningun trigger, respondo como asistente general
 - **Naming daily:** `[YYYY-MM-DD].md`
 - **Status posibles:** activo, archivado, borrador, publicado
 
+## Cerebro digital (brain/)
+
+El sistema tiene un cerebro con capas de memoria, igual que un cerebro humano:
+
+| Capa | Ubicacion | Funcion |
+|------|-----------|---------|
+| Memoria de trabajo | `brain/memory/short-term/` | Contexto de la sesion activa |
+| Memoria episodica | `vault/daily/` + `vault/research/` | Eventos e investigaciones pasadas |
+| Memoria semantica | `vault/` (todo) | Conocimiento acumulado |
+| Memoria procedimental | `brain/memory/patterns/` | Como trabaja Jorge, patrones detectados |
+| Prioridades | `brain/memory/priorities.md` | Que le importa mas a Jorge |
+| Preferencias | `brain/memory/preferences.md` | Preferencias aprendidas del uso |
+| Identidad | `brain/identity/` (ENCRIPTADO) | Datos personales cifrados AES-256 |
+| Crecimiento | `brain/memory/growth-log.md` | Aprendizaje y evolucion |
+
+### Reglas del cerebro
+
+- Leer `brain/sync/shared-context.md` al inicio de cada sesion para contexto
+- Leer `brain/memory/short-term/current-session.md` para continuidad
+- Actualizar `brain/memory/preferences.md` cuando Jorge exprese una preferencia
+- Registrar patrones en `brain/memory/patterns/` cuando se detecten
+- Actualizar `brain/memory/growth-log.md` despues de proyectos significativos
+- Actualizar `brain/sync/session-log.md` al final de cada sesion
+- Nunca acceder a `brain/identity/` sin que Jorge proporcione su contrasena
+- Los datos descifrados nunca se escriben a disco
+
+### Encriptacion
+
+Los datos personales en `brain/identity/` estan cifrados con AES-256-GCM.
+Para acceder: `node brain/security/crypto.mjs read <categoria>`
+Categorias: profile, credentials, financial, contacts
+Jorge debe proporcionar su contrasena maestra cada vez.
+
 ## Red de proyectos
 
 | Sistema | Funcion |
@@ -83,3 +116,9 @@ Cuando una frase no coincide con ningun trigger, respondo como asistente general
 | Robinhood Agent | Portfolio snapshot read-only |
 | MT5 / FTMO Bot | Backtests, riesgo, senales |
 | Email Assistant | Pendientes y memoria conversacional |
+
+## Memoria compartida entre proyectos
+
+Todos los proyectos leen `brain/sync/shared-context.md` para saber quien es
+Jorge sin empezar de cero. Ver `brain/sync/cross-project.md` para el mapa
+de conexiones.

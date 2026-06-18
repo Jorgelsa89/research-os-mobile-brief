@@ -2,3 +2,5 @@
 .mobile-server.pid
 localtunnel.*.log
 vault/email/
+brain/identity/*.enc
+brain/memory/short-term/
