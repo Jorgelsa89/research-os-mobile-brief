@@ -1,3 +1,4 @@
 .localtunnel.pid
 .mobile-server.pid
 localtunnel.*.log
+vault/email/
