@@ -22,7 +22,25 @@ continuidad entre sesiones y proyectos.
 
 ## Sesiones
 
-### 2026-06-18 — Research OS (Agentic OS Build)
+### 2026-06-18 — Research OS (Agentic OS Build) — Sesion 2
+- Duracion: sesion extendida
+- Skills usados: ninguno (construyendo el sistema)
+- Que se hizo:
+  - Framework institucional de options trading importado al vault
+  - Guia de importacion de datos de ChatGPT creada
+  - Robin Hood Agent integrado al ecosistema del cerebro
+  - Universo de 50 activos documentado en cross-project.md
+  - Actualizados: shared-context, growth-log, cross-project, session-log
+- Que quedo pendiente:
+  - Exportar memorias de ChatGPT e importarlas
+  - Conectar API Schwab/thinkorswim al Robin Hood Agent
+  - Testear skills en accion
+  - Agregar datos personales encriptados
+  - Dashboard dinamico
+  - Voz local
+- Aprendizaje: Options trading institucional, integracion multi-proyecto
+
+### 2026-06-18 — Research OS (Agentic OS Build) — Sesion 1
 - Duracion: sesion extendida
 - Skills usados: ninguno (construyendo el sistema)
 - Que se hizo:

@@ -31,6 +31,7 @@ quien es Jorge sin empezar de cero.
 |----------|--------|-------------|
 | Research OS | En construccion | Dashboard + Agentic OS tipo Jarvis |
 | Trading | Activo | MT5/FTMO, backtests, senales |
+| Robin Hood Agent | Infraestructura lista | Options scanner, 50 activos, Schwab API (pendiente) |
 | Email | Activo | Gestion de correo |
 | Social Media | Secundario | Instagram/Facebook |
 
@@ -40,6 +41,16 @@ quien es Jorge sin empezar de cero.
 - Decision: Buy (8+) / Watch (6-7.9) / Skip (<6)
 - Cauteloso: prefiere Watch sobre Buy cuando hay duda
 - Busca beneficiarios secundarios, no solo el obvio
+
+## Conocimiento de trading
+
+- **Options trading:** Framework institucional completo (ver [[OPTIONS-Trading-Methodology-2026-06-18]])
+- **Filosofia:** El dinero se hace comprando barato lo subestimado y vendiendo caro lo sobrepagado
+- **Activos principales:** SPX, QQQ, IWM, NVDA, TLT + universo de 50 activos
+- **Regla dura:** No naked options. Riesgo definido siempre.
+- **Cuenta base:** $10,000. Max $200 por trade, max $400 perdida diaria
+- **Meta:** $500-$800/mes (5-8% mensual)
+- **Robin Hood Agent:** Escaner de opciones en desarrollo con Schwab/thinkorswim API
 
 ## Preferencias de comunicacion
 
@@ -56,4 +67,4 @@ con contexto personal que trasciende un solo proyecto.
 
 ## Ultima actualizacion
 
-2026-06-18 — Creado durante construccion del Agentic OS.
+2026-06-18 — Agregado: conocimiento de options trading, Robin Hood Agent, universo de 50 activos.

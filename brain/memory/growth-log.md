@@ -13,11 +13,12 @@ a lo largo del tiempo. Es la base del "yo virtual" que aprende junto a el.
 
 | Area | Nivel actual | Ultima actividad | Notas |
 |------|-------------|------------------|-------|
-| Mercados financieros | intermedio | 2026-06-08 | Analisis de NVDA/RTX Spark |
-| Trading MT5/FTMO | (pendiente) | — | Por evaluar |
+| Mercados financieros | intermedio-avanzado | 2026-06-18 | Analisis NVDA + framework opciones institucional |
+| Options trading | avanzado (teoria) | 2026-06-18 | Framework completo: regimen, IV/RV, Greeks, spreads |
+| Trading MT5/FTMO | activo | 2026-06-18 | Conectado con Robin Hood Agent |
 | Tecnologia/AI | activo | 2026-06-18 | Construyendo Agentic OS |
 | Contenido digital | basico | 2026-06-08 | Compositor social activo |
-| Programacion | (pendiente) | — | Usa Claude Code como herramienta |
+| Programacion | activo | 2026-06-18 | Robin Hood Agent con 111 tests pasando |
 
 ## Cronologia de aprendizaje
 
@@ -31,11 +32,25 @@ a lo largo del tiempo. Es la base del "yo virtual" que aprende junto a el.
   skill architecture, Obsidian como memoria, encriptacion AES-256 para
   datos personales, y arquitectura de cerebro digital.
 
+- **2026-06-18:** Importo framework institucional completo de options trading.
+  Dominio teorico de: clasificacion de regimenes (trend/range/event/stress),
+  expected move vs straddle ATM, IV vs RV, skew analysis, term structure,
+  Greeks (delta/gamma/theta/vega), matriz de decision por vista + IV,
+  setups especificos para SPX/QQQ/IWM/NVDA/TLT, scoring 0-10, reglas de
+  riesgo para cuenta $10K, concepto de anti-trade.
+
+- **2026-06-18:** Integro proyecto Robin Hood Agent al ecosistema del cerebro.
+  Universo de 50 activos para escaneo diario (indices, mega caps, semis,
+  finanzas, energia, healthcare, ETFs, volatilidad). Infraestructura con
+  111 tests pasando. Pendiente: conexion API Schwab/thinkorswim.
+
 ## Temas pendientes de explorar
 
+- [ ] Conexion API Schwab/thinkorswim para Robin Hood Agent
+- [ ] Paper trading con datos reales
 - [ ] Backtesting de estrategias en MT5
-- [ ] Analisis tecnico sistematico
 - [ ] Automatizacion de briefs diarios
+- [ ] Importar memorias de ChatGPT (guia creada, pendiente exportar datos)
 - [ ] Voz local (Whisper + Kokoro)
 
 ## Como se actualiza
