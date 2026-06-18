@@ -25,10 +25,18 @@ Con el tiempo, puede anticipar decisiones y sugerir opciones alineadas.
 - **Ambicioso pero practico:** Quiere el sistema completo (Jarvis) pero
   acepta empezar por la logica primero.
 
+### Negocios
+- **Escalador:** Planifica crecimiento sistematico (TRAVIA de 1 a multiples unidades)
+- **Doble ingreso:** Busca fuentes multiples de ingreso (trabajo + trading + negocios)
+- **Regulatorio:** Entiende y planifica requisitos legales (DOT, licencias)
+
 ### General
 - **Preguntas antes de actuar:** Prefiere entender el panorama completo
   antes de empezar.
 - **Visual:** Responde bien a tablas, diagramas, y comparaciones visuales.
+- **Optimizador:** Busca constantemente la mejor relacion costo/beneficio
+  (negociacion de tasas, incentivos, comparacion de escenarios)
+- **Autonomo:** Cuando confía, delega completamente ("tienes full control")
 
 ## Como se actualiza
 
@@ -45,3 +53,6 @@ rechazar una sugerencia, cambiar de direccion), el sistema registra:
 - 2026-06-18 proyecto: Eligio "hagamoslo" para agentic OS → Builder
 - 2026-06-18 personalidad: Eligio hibrido (formal+casual) → Adaptable
 - 2026-06-18 prioridades: Eligio Research, Trading, Email sobre Social → Orientado a resultados
+- 2026-06-18 chatgpt-import: TRAVIA planificacion multi-unidad → Escalador
+- 2026-06-18 chatgpt-import: Negociacion vivienda Lennar (tasas, HOA, seguros) → Optimizador
+- 2026-06-18 chatgpt-import: Delega con "full control" cuando confía → Autonomo

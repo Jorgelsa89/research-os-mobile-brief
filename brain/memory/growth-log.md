@@ -15,10 +15,15 @@ a lo largo del tiempo. Es la base del "yo virtual" que aprende junto a el.
 |------|-------------|------------------|-------|
 | Mercados financieros | intermedio-avanzado | 2026-06-18 | Analisis NVDA + framework opciones institucional |
 | Options trading | avanzado (teoria) | 2026-06-18 | Framework completo: regimen, IV/RV, Greeks, spreads |
+| Forex trading | avanzado | 2026-06-18 | SMC/ICT, CHOCH, liquidez, Pine Script, VPS NY |
 | Trading MT5/FTMO | activo | 2026-06-18 | Conectado con Robin Hood Agent |
-| Tecnologia/AI | activo | 2026-06-18 | Construyendo Agentic OS |
+| Tecnologia/AI | activo | 2026-06-18 | Agentic OS, agentes autonomos, Ollama, Codex |
+| Fotografia/Video | profesional | 2026-06-18 | Leica M6, drones, ex Telemundo/NBC |
+| Operaciones/Logistica | profesional | 2026-06-18 | Dir. Ops Robotic Imaging + TRAVIA Logistics |
+| Hardware/PC | avanzado | 2026-06-18 | Builds custom, liquid cooling, BIOS optimization |
 | Contenido digital | basico | 2026-06-08 | Compositor social activo |
 | Programacion | activo | 2026-06-18 | Robin Hood Agent con 111 tests pasando |
+| Economia/Geopolitica | intermedio | 2026-06-18 | Analisis macro, tasas, Fed, inflacion |
 
 ## Cronologia de aprendizaje
 
@@ -50,7 +55,8 @@ a lo largo del tiempo. Es la base del "yo virtual" que aprende junto a el.
 - [ ] Paper trading con datos reales
 - [ ] Backtesting de estrategias en MT5
 - [ ] Automatizacion de briefs diarios
-- [ ] Importar memorias de ChatGPT (guia creada, pendiente exportar datos)
+- [x] Importar memorias de ChatGPT — COMPLETADO (custom instructions + memory summary)
+- [ ] Encriptar datos personales sensibles (nombre completo, ubicacion, etc.)
 - [ ] Voz local (Whisper + Kokoro)
 
 ## Como se actualiza

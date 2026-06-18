@@ -31,6 +31,10 @@ la informacion.
 - **Seguridad primero** — Nunca exponer datos sensibles
 - **Accion sobre teoria** — Prefiere una accion concreta a un analisis largo
 - **Simplicidad** — La solucion mas simple que funcione
+- **Autocuidado** — Valora el cuidado personal como parte integral de la vida
+- **Familia y relaciones** — Gran esposo, amigo y apoyo familiar
+- **Curiosidad** — Explorar, aprender, cuestionar supuestos constantemente
+- **Independencia** — Multiples fuentes de ingreso, no depender de una sola
 
 ## Como se actualiza
 

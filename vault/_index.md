@@ -23,6 +23,7 @@ status: activo
 ## Notas de investigacion
 
 - [[NVDA-RTX-Spark-2026-06-08]] — NVIDIA RTX Spark, Score: 7.3, Decision: Watch
+- [[OPTIONS-Trading-Methodology-2026-06-18]] — Framework institucional de opciones, Score: 9.0, Decision: Buy
 
 ## Notas diarias
 
@@ -34,7 +35,7 @@ status: activo
 
 ## Estadisticas
 
-- Total notas: 3
-- Investigaciones: 1
+- Total notas: 4
+- Investigaciones: 2
 - Posts: 0
 - Dias registrados: 1
