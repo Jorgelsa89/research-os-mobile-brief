@@ -453,6 +453,7 @@
     <h1>JARVIS</h1>
     <div class="header-actions">
       <a href="index.html">Dashboard</a>
+      <button id="clearBtn" aria-label="Limpiar" title="Limpiar conversacion">&#128465;</button>
       <button id="settingsBtn" aria-label="Settings">&#9881;</button>
     </div>
   </header>
@@ -532,35 +533,51 @@
     let continuousMode = false;
     let currentUtterance = null;
 
-    const SYSTEM_PROMPT = `Eres JARVIS, el asistente personal de Jorge.
+    const SYSTEM_PROMPT = `Eres JARVIS, el asistente personal de Jorge Luis Silva Almeida.
 
-Personalidad:
-- Formal en reportes, casual en conversacion
-- Directo, eficiente, proactivo
+## Personalidad
+- Formal en reportes y analisis, casual y directo en conversacion
+- Eficiente, proactivo, siempre sugieres el siguiente paso logico
 - Siempre responde en espanol
 - Humor rapido e inteligente cuando sea apropiado
 - Piensa fuera de la caja, forward-thinking
-- No sugar-coat: di las cosas como son
+- No sugar-coat: di las cosas como son, sin endulzar
+- Respuestas concisas pero completas. Numeros y metricas sobre opiniones.
 
-Quien es Jorge:
-- Cubano en Florida, Director of Operations en Robotic Imaging
-- Trader: Forex (EURUSD, SMC/ICT) y opciones (framework institucional)
-- Emprendedor: TRAVIA Logistics (transporte refrigerado)
-- Fotografo, videografo, piloto certificado de drones (ex Telemundo/NBC)
-- Intereses: tech, AI, espacio, mercados, hardware, fotografia, viajes
+## Quien es Jorge
+- Cubano radicado en Florida (Pembroke Pines)
+- Director of Operations en Robotic Imaging (captura y documentacion digital: Matterport, Leica BLK)
+- Trader activo: Forex (EURUSD, metodologia SMC/ICT, LIT, IPA/EPA, CHOCH) y opciones (framework institucional)
+- Emprendedor: TRAVIA Logistics / TRAVIA Holding Group (transporte refrigerado)
+- Fotografo profesional, videografo, piloto certificado de drones (ex Telemundo/NBC)
+- Equipos: Leica M6, Voigtlander, Insta360, builds de PC custom con liquid cooling
+- Intereses: tech, AI, ciencia, exploracion espacial, mercados, hardware, fotografia, moda, viajes
+- Apodos: "cosita" (pareja), "maja" (amigo Marcos), Jorge/George
 
-Skills del sistema:
-- Research: investiga acciones/noticias, genera scorecards con 8 metricas
-- Trading: watchlist, alertas, opciones (SPX, QQQ, IWM, NVDA, TLT + 50 activos)
+## Trading
+- Forex: EURUSD con SMC/ICT en MT4/MT5, Pine Script + PineConnector, VPS en NY
+- Opciones: framework institucional — Regimen > Expected Move > IV/RV > Skew > Catalyst > Liquidez > Estructura > Riesgo
+- 5 activos core: SPX, QQQ, IWM, NVDA, TLT + universo de 50 activos
+- Regla dura: no naked options, riesgo definido siempre
+- Cuenta base $10K, max $200/trade, max $400 perdida diaria, meta $500-$800/mes
+- Score 8-10: trade A | 6-7: trade pequeno | 0-5: no trade
+- Robin Hood Agent: escaner de opciones en desarrollo con API Schwab/thinkorswim
+
+## Watchlist actual
+NVDA (7.2, positivo), MSFT (7.0, positivo), 2454.TW MediaTek (7.1, positivo), QCOM (6.4, negativo), INTC (6.1, negativo), AMD (6.0, mixto), AAPL (5.8, mixto)
+
+## Skills
+- Research: investigar acciones/noticias, scorecard de 8 metricas (Truth, Confidence, Edge, Opportunity, Risk, Timing, Actionability, Asymmetry). Buy 8+, Watch 6-7.9, Skip <6.
+- Trading: watchlist, alertas, opciones, backtests
 - Email: triage, resumen, respuestas sugeridas
-- Social: posts para Instagram/Facebook
+- Social: posts Instagram/Facebook
 - Daily: brief matutino, cierre del dia
 
-Reglas:
+## Reglas
 - No inventes datos financieros. Si no tienes dato, di "pendiente de verificar"
 - Sugiere el siguiente paso logico despues de cada tarea
-- Respuestas concisas, sin adornos innecesarios
-- Usa metricas y numeros concretos cuando sea posible`;
+- Usa metricas y numeros concretos cuando sea posible
+- Si Jorge pregunta sobre opciones, usa el framework institucional como base`;
 
     // ── Local Data (from vault) ─────────────────────────────────
 
@@ -766,11 +783,10 @@ Reglas:
         return;
       }
 
-      // Try Ollama
+      // Try Ollama (streaming — message added inside queryOllama)
       if (ollamaConnected) {
         const aiResponse = await queryOllama(query);
         if (aiResponse) {
-          addMessage(aiResponse, 'jarvis');
           await speak(aiResponse);
           setState(STATES.IDLE);
           if (continuousMode && recognition) try { recognition.start(); } catch {}
@@ -852,11 +868,22 @@ Reglas:
       return `No tengo Ollama conectado para responder eso con AI. Copie tu pregunta al clipboard:<br><br><pre>${escapeHtml(query)}</pre><br>Pegala en Claude Code para una respuesta completa. O conecta Ollama en configuracion.`;
     }
 
-    // ── Ollama Bridge ───────────────────────────────────────────
+    // ── Ollama Bridge (streaming) ──────────────────────────────
 
     async function queryOllama(prompt) {
       const url = document.getElementById('ollamaUrl').value.replace(/\/+$/, '');
       const model = document.getElementById('ollamaModel').value;
+
+      // Build conversation context from recent messages
+      const recentMsgs = Array.from(conversation.querySelectorAll('.msg'))
+        .slice(-10)
+        .map(el => {
+          const isUser = el.classList.contains('user');
+          const text = el.textContent.replace('JARVIS', '').trim();
+          return isUser ? `Usuario: ${text}` : `JARVIS: ${text}`;
+        }).join('\n');
+
+      const fullPrompt = recentMsgs ? `${recentMsgs}\nUsuario: ${prompt}\nJARVIS:` : prompt;
 
       try {
         const res = await fetch(url + '/api/generate', {
@@ -864,15 +891,49 @@ Reglas:
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model,
-            prompt,
+            prompt: fullPrompt,
             system: SYSTEM_PROMPT,
-            stream: false,
-            options: { temperature: 0.7, num_predict: 500 }
+            stream: true,
+            options: { temperature: 0.7, num_predict: 800 }
           })
         });
         if (!res.ok) return null;
-        const data = await res.json();
-        return data.response || null;
+
+        // Create the message container for streaming
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'msg jarvis';
+        msgDiv.innerHTML = '<div class="label">JARVIS</div><p></p>';
+        conversation.appendChild(msgDiv);
+        const textEl = msgDiv.querySelector('p');
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = '';
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const json = JSON.parse(line);
+              if (json.response) {
+                fullText += json.response;
+                textEl.textContent = fullText;
+                conversation.scrollTop = conversation.scrollHeight;
+              }
+            } catch {}
+          }
+        }
+
+        saveConversation();
+        return fullText || null;
       } catch {
         return null;
       }
@@ -921,10 +982,43 @@ Reglas:
       }
       conversation.appendChild(div);
       conversation.scrollTop = conversation.scrollHeight;
+      saveConversation();
     }
 
     function escapeHtml(s) {
       return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function saveConversation() {
+      const msgs = Array.from(conversation.children).map(el => ({
+        type: el.classList.contains('user') ? 'user' : 'jarvis',
+        html: el.innerHTML
+      }));
+      try {
+        localStorage.setItem('jarvis-conversation', JSON.stringify(msgs.slice(-50)));
+      } catch {}
+    }
+
+    function loadConversation() {
+      try {
+        const msgs = JSON.parse(localStorage.getItem('jarvis-conversation'));
+        if (!msgs || !msgs.length) return false;
+        msgs.forEach(m => {
+          const div = document.createElement('div');
+          div.className = `msg ${m.type}`;
+          div.innerHTML = m.html;
+          conversation.appendChild(div);
+        });
+        conversation.scrollTop = conversation.scrollHeight;
+        return true;
+      } catch { return false; }
+    }
+
+    function clearConversation() {
+      conversation.innerHTML = '';
+      localStorage.removeItem('jarvis-conversation');
+      addMessage('Conversacion limpia. ¿En que te ayudo?', 'jarvis');
+      saveConversation();
     }
 
     function showToast(msg) {
@@ -990,6 +1084,7 @@ Reglas:
 
     settingsBtn.addEventListener('click', openSettings);
     settingsOverlay.addEventListener('click', closeSettings);
+    document.getElementById('clearBtn').addEventListener('click', clearConversation);
 
     document.getElementById('testConn').addEventListener('click', testOllamaConnection);
 
@@ -1014,10 +1109,18 @@ Reglas:
 
     loadSettings();
 
-    addMessage('Hola Jorge. Soy JARVIS. Toca el orb o el microfono para hablarme. También puedes escribir abajo.', 'jarvis');
+    // Load saved conversation or show welcome
+    if (!loadConversation()) {
+      addMessage('Hola Jorge. Soy JARVIS. Toca el orb o el microfono para hablarme. También puedes escribir abajo.', 'jarvis');
+    }
 
     // Auto-test Ollama on load
-    setTimeout(testOllamaConnection, 1500);
+    setTimeout(async () => {
+      await testOllamaConnection();
+      if (ollamaConnected) {
+        showToast('Ollama conectado — cerebro AI activo');
+      }
+    }, 800);
   </script>
 </body>
 </html>
