@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brain Map — Research OS</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      --bg: #070a0f;
+      --panel: #0d1117;
+      --border: rgba(255,255,255,0.07);
+      --text: #e6edf3;
+      --dim: #7d8590;
+      --blue: #57a8ff;
+      --cyan: #00d4a0;
+      --amber: #f5a623;
+      --purple: #a855f7;
+      --orange: #ff6b35;
+      --red: #ff4757;
+      --green: #2ecc71;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; overflow:hidden; height:100vh; width:100vw; }
+    canvas#bg { position:fixed; inset:0; z-index:0; opacity:0.35; }
+    #app { position:relative; z-index:1; height:100vh; display:flex; flex-direction:column; }
+
+    header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 18px;
+      background:rgba(7,10,15,0.85);
+      border-bottom:1px solid var(--border);
+      backdrop-filter:blur(12px);
+      flex-shrink:0; gap:12px;
+    }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    header h1 { font-size:16px; font-weight:800; color:var(--blue); letter-spacing:1px; white-space:nowrap; }
+    header h1 em { color:var(--dim); font-size:11px; font-weight:400; font-style:normal; margin-left:8px; }
+    .filters { display:flex; gap:5px; flex-wrap:wrap; }
+    .fb {
+      padding:4px 11px; border-radius:999px;
+      border:1px solid var(--border); background:transparent;
+      color:var(--dim); font-size:10px; font-weight:700;
+      cursor:pointer; letter-spacing:0.5px; transition:all 0.2s;
+    }
+    .fb:hover { border-color:var(--blue); color:var(--blue); }
+    .fb.on { background:rgba(87,168,255,.12); border-color:var(--blue); color:var(--blue); }
+    .fb[data-t="brain"].on { background:rgba(87,168,255,.12); border-color:var(--blue); color:var(--blue); }
+    .fb[data-t="skills"].on { background:rgba(0,212,160,.12); border-color:var(--cyan); color:var(--cyan); }
+    .fb[data-t="vault"].on { background:rgba(245,166,35,.12); border-color:var(--amber); color:var(--amber); }
+    .fb[data-t="pwa"].on { background:rgba(168,85,247,.12); border-color:var(--purple); color:var(--purple); }
+    .fb[data-t="external"].on { background:rgba(255,107,53,.12); border-color:var(--orange); color:var(--orange); }
+
+    #gc { flex:1; position:relative; overflow:hidden; }
+    #graph { width:100%; height:100%; }
+
+    .node circle { cursor:pointer; }
+    .node text { pointer-events:none; dominant-baseline:middle; }
+    .node.dim circle, .node.dim text { opacity:0.1; }
+    .node.dim .status-dot { opacity:0.1; }
+    .lnk.dim { opacity:0.04; }
+
+    /* Panel */
+    #panel {
+      position:fixed; right:0; top:0; bottom:0; width:310px;
+      background:rgba(10,13,20,0.97); border-left:1px solid var(--border);
+      backdrop-filter:blur(20px); padding:18px; z-index:100;
+      overflow-y:auto; transform:translateX(100%); transition:transform 0.28s ease;
+    }
+    #panel.open { transform:translateX(0); }
+    #pclose {
+      position:absolute; top:14px; right:14px;
+      background:transparent; border:1px solid var(--border);
+      color:var(--dim); border-radius:6px; width:26px; height:26px;
+      cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center;
+    }
+    #pclose:hover { color:var(--text); }
+    .pbadge {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:2px 9px; border-radius:999px;
+      font-size:9px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
+      margin-bottom:10px;
+    }
+    .ptitle { font-size:20px; font-weight:800; margin-bottom:4px; }
+    .pstatus { font-size:11px; color:var(--dim); margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+    .pdesc {
+      font-size:12px; line-height:1.65; color:var(--text);
+      background:rgba(255,255,255,0.03); padding:11px 13px;
+      border-radius:8px; border-left:3px solid; margin-bottom:14px;
+    }
+    .psec { margin-bottom:12px; }
+    .psec h4 { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--dim); margin-bottom:7px; }
+    .pfile {
+      padding:5px 9px; background:rgba(255,255,255,0.03);
+      border-radius:5px; margin-bottom:3px;
+      font-size:10px; font-family:monospace; color:var(--dim);
+    }
+    .pconn {
+      display:flex; align-items:center; gap:7px;
+      padding:6px 9px; background:rgba(255,255,255,0.03);
+      border-radius:6px; margin-bottom:3px;
+      font-size:11px; cursor:pointer; transition:background 0.15s;
+    }
+    .pconn:hover { background:rgba(255,255,255,0.07); }
+    .pconn-label { color:var(--dim); font-size:10px; }
+    .pconn-name { margin-left:auto; font-weight:700; font-size:11px; }
+
+    /* Tooltip */
+    #tip {
+      position:fixed; background:rgba(10,13,20,0.96);
+      border:1px solid var(--border); border-radius:8px;
+      padding:8px 12px; font-size:12px;
+      pointer-events:none; z-index:200; max-width:200px; display:none;
+    }
+    #tip strong { display:block; margin-bottom:2px; }
+    #tip span { color:var(--dim); font-size:10px; line-height:1.4; }
+
+    /* Legend */
+    #legend {
+      position:fixed; left:14px; bottom:14px;
+      background:rgba(10,13,20,0.88); border:1px solid var(--border);
+      border-radius:10px; padding:11px 14px; backdrop-filter:blur(10px); z-index:50;
+    }
+    .lt { font-size:8px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--dim); margin-bottom:7px; }
+    .li { display:flex; align-items:center; gap:6px; margin-bottom:4px; font-size:10px; color:var(--dim); }
+    .ld { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+    /* Stats */
+    #stats {
+      position:fixed; right:14px; bottom:14px;
+      background:rgba(10,13,20,0.88); border:1px solid var(--border);
+      border-radius:10px; padding:11px 14px; backdrop-filter:blur(10px); z-index:50;
+    }
+    .sr { display:flex; justify-content:space-between; gap:18px; margin-bottom:3px; }
+    .sl { font-size:10px; color:var(--dim); }
+    .sv { font-size:10px; font-weight:700; }
+
+    /* Zoom */
+    #zc { position:fixed; left:14px; top:60px; display:flex; flex-direction:column; gap:4px; z-index:50; }
+    .zb {
+      width:30px; height:30px; background:rgba(10,13,20,0.88);
+      border:1px solid var(--border); border-radius:7px;
+      color:var(--dim); font-size:14px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; backdrop-filter:blur(10px);
+      transition:all 0.2s;
+    }
+    .zb:hover { color:var(--text); border-color:var(--dim); }
+
+    ::-webkit-scrollbar { width:3px; }
+    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+  </style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="app">
+  <header>
+    <div class="header-left">
+      <h1>🧠 Brain Map <em>Research OS · Jorge Silva · 2026</em></h1>
+    </div>
+    <div class="filters">
+      <button class="fb on" data-t="all">Todo</button>
+      <button class="fb" data-t="core">Núcleo</button>
+      <button class="fb" data-t="brain">Memoria</button>
+      <button class="fb" data-t="skills">Skills</button>
+      <button class="fb" data-t="vault">Vault</button>
+      <button class="fb" data-t="pwa">Interfaz</button>
+      <button class="fb" data-t="external">Proyectos</button>
+    </div>
+  </header>
+  <div id="gc"><svg id="graph"></svg></div>
+</div>
+
+<div id="zc">
+  <button class="zb" id="zi">+</button>
+  <button class="zb" id="zr">⊙</button>
+  <button class="zb" id="zo">−</button>
+</div>
+
+<div id="panel">
+  <button id="pclose">×</button>
+  <div id="pcontent"></div>
+</div>
+
+<div id="tip"></div>
+
+<div id="legend">
+  <div class="lt">Categorías</div>
+  <div class="li"><div class="ld" style="background:#fff"></div>Núcleo</div>
+  <div class="li"><div class="ld" style="background:#57a8ff"></div>Memoria</div>
+  <div class="li"><div class="ld" style="background:#00d4a0"></div>Skills</div>
+  <div class="li"><div class="ld" style="background:#f5a623"></div>Vault</div>
+  <div class="li"><div class="ld" style="background:#a855f7"></div>Interfaz</div>
+  <div class="li"><div class="ld" style="background:#ff6b35"></div>Proyectos ext.</div>
+  <div class="lt" style="margin-top:9px">Estado</div>
+  <div class="li"><div class="ld" style="background:#2ecc71"></div>Activo</div>
+  <div class="li"><div class="ld" style="background:#f5a623"></div>Parcial</div>
+  <div class="li"><div class="ld" style="background:#7d8590"></div>Vacío / Planificado</div>
+  <div class="li"><div class="ld" style="background:#ff4757"></div>Encriptado 🔒</div>
+</div>
+
+<div id="stats">
+  <div class="lt">Sistema</div>
+  <div class="sr"><span class="sl">Archivos</span><span class="sv">91</span></div>
+  <div class="sr"><span class="sl">Líneas</span><span class="sv">5,927</span></div>
+  <div class="sr"><span class="sl">Skills</span><span class="sv">5</span></div>
+  <div class="sr"><span class="sl">Vault notas</span><span class="sv">4</span></div>
+  <div class="sr"><span class="sl">Commits</span><span class="sv">14</span></div>
+  <div class="sr"><span class="sl">Estado</span><span class="sv" style="color:#2ecc71">ACTIVO</span></div>
+</div>
+
+<script>
+// ── CANVAS BACKGROUND ──────────────────────────────────────────
+const cvs = document.getElementById('bg');
+const ctx = cvs.getContext('2d');
+function resize() { cvs.width = innerWidth; cvs.height = innerHeight; }
+resize(); window.addEventListener('resize', resize);
+
+const pts = Array.from({length:70}, () => ({
+  x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+  vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25,
+  r:Math.random()*1.5+.5
+}));
+
+(function drawBg() {
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  pts.forEach(p => {
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>cvs.width) p.vx*=-1;
+    if(p.y<0||p.y>cvs.height) p.vy*=-1;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(87,168,255,.6)'; ctx.fill();
+  });
+  for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++) {
+    const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=Math.hypot(dx,dy);
+    if(d<110) {
+      ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y);
+      ctx.strokeStyle=`rgba(87,168,255,${.12*(1-d/110)})`; ctx.lineWidth=.5; ctx.stroke();
+    }
+  }
+  requestAnimationFrame(drawBg);
+})();
+
+// ── DATA ───────────────────────────────────────────────────────
+const C = { core:'#ffffff', brain:'#57a8ff', skills:'#00d4a0', vault:'#f5a623', pwa:'#a855f7', external:'#ff6b35' };
+const SC = { active:'#2ecc71', empty:'#7d8590', encrypted:'#ff4757', partial:'#f5a623', planned:'#7d8590', secondary:'#7d8590', infrastructure:'#57a8ff' };
+const TL = { core:'Núcleo', brain:'Memoria', skills:'Skills', vault:'Vault', pwa:'Interfaz', external:'Proyecto Externo' };
+const SL = { active:'Activo', empty:'Vacío', encrypted:'Encriptado 🔒', partial:'Parcial', planned:'Planificado', secondary:'Secundario', infrastructure:'Infraestructura lista' };
+
+const nodes = [
+  {id:'jarvis',label:'JARVIS',type:'core',sz:44,status:'active',
+   desc:'Sistema central del Agentic OS personal de Jorge. Asistente AI con personalidad híbrida (formal en reportes, casual en chat), memoria persistente en múltiples capas, 5 skills especializados, y voz via Ollama + Web Speech API.',
+   files:['CLAUDE.md — Cerebro central','jarvis.html — Interfaz de voz','brain/ — Memoria persistente','skills/ — 5 módulos','vault/ — Conocimiento acumulado'],lines:'~5,927 líneas · 91 archivos'},
+
+  {id:'claude-md',label:'CLAUDE.md',type:'core',sz:26,status:'active',
+   desc:'124 líneas. Instrucciones maestras: personalidad Jarvis, tabla de skills con triggers, scorecard de 8 métricas (Buy/Watch/Skip), reglas operación, convenciones del vault, arquitectura del cerebro, red de proyectos.',
+   files:['CLAUDE.md'],lines:'124 líneas'},
+
+  {id:'brain',label:'brain/',type:'brain',sz:32,status:'active',
+   desc:'Cerebro digital de Jorge modelado como capas neuronales: identity (datos personales cifrados), memory (preferencias, patrones, prioridades, crecimiento), sync (contexto compartido entre proyectos), security (motor AES-256).',
+   files:['brain/README.md','brain/identity/','brain/memory/','brain/sync/','brain/security/'],lines:'~800 líneas · 12 archivos'},
+
+  {id:'brain-identity',label:'identity/',type:'brain',sz:20,status:'encrypted',
+   desc:'🔒 AES-256-GCM. Datos personales cifrados con PBKDF2 100K iteraciones SHA-512. profile.json.enc (nombre, dirección FL, fecha nacimiento 22-May-1989) + contacts.json.enc (familia en Cuba: Vivian, Dayana, Zoe, Regino). Los datos descifrados NUNCA se escriben a disco.',
+   files:['profile.json.enc — Perfil personal','contacts.json.enc — Familia Cuba'],lines:'Cifrado · acceso via contraseña maestra'},
+
+  {id:'brain-memory',label:'memory/',type:'brain',sz:24,status:'active',
+   desc:'Memoria de largo plazo: preferencias de comunicación (bilingüe, directo, sin azúcar), patrones de trabajo (flujo iterativo rápido: ve → pregunta → "hagámoslo"), cómo toma decisiones (scorecard, edge informacional), prioridades vitales, registro de crecimiento (11 áreas mapeadas).',
+   files:['priorities.md — 5 prioridades vitales','preferences.md — Trading, comunicación, investigación','growth-log.md — 11 áreas de conocimiento','patterns/workflow.md — Cómo trabaja Jorge','patterns/communication.md — Patrones de comunicación','patterns/decisions.md — Framework de decisiones','short-term/current-session.md — Contexto sesión activa'],lines:'~430 líneas'},
+
+  {id:'brain-sync',label:'sync/',type:'brain',sz:22,status:'active',
+   desc:'Memoria compartida entre proyectos. shared-context.md es la "tarjeta de identidad" que cualquier AI project lee al iniciar. cross-project.md mapea las 50 conexiones del universo de Robin Hood. session-log.md registra cada sesión de trabajo.',
+   files:['shared-context.md — Identidad de Jorge para todos los proyectos','cross-project.md — Mapa 50 activos Robin Hood + integraciones','session-log.md — Historial de sesiones','chatgpt-import-guide.md — Cómo migrar memorias de ChatGPT'],lines:'~400 líneas'},
+
+  {id:'brain-security',label:'security/',type:'brain',sz:18,status:'active',
+   desc:'Motor de encriptación. CLI: node brain/security/crypto.mjs read <categoría>. 4 categorías: profile ✓, contacts ✓, credentials (pendiente), financial (pendiente). Contraseña maestra nunca almacenada.',
+   files:['crypto.mjs — AES-256-GCM + PBKDF2 100K iter.'],lines:'244 líneas'},
+
+  {id:'skills',label:'skills/',type:'skills',sz:32,status:'active',
+   desc:'5 módulos especializados. Cada uno tiene SKILL.md (instrucciones de activación y proceso), templates de output, y lessons.md para aprendizaje continuo. Se activan por frases clave detectadas por Claude.',
+   files:['research/ — Investigación financiera','trading/ — Watchlist y alertas','email/ — Gestión de correos','social/ — Contenido redes','daily/ — Brief y cierre diario'],lines:'~800 líneas · 28 archivos'},
+
+  {id:'sk-research',label:'Research',type:'skills',sz:23,status:'active',
+   desc:'Investiga acciones, noticias tech, cualquier tema. Genera briefs con scorecard de 8 métricas: Truth, Confidence, Edge, Opportunity, Risk, Timing, Actionability, Asymmetry. Decisión automática: Buy (≥8.0) / Watch (6-7.9) / Skip (<6.0).',
+   files:['SKILL.md','brief-template.md','scorecard-template.md','stock-impact-template.md','lessons.md'],lines:'272 líneas'},
+
+  {id:'sk-trading',label:'Trading',type:'skills',sz:23,status:'active',
+   desc:'Gestiona watchlist (máx 15), configura alertas de precio, evalúa backtests MT5/FTMO. Framework completo de opciones institucionales importado desde conocimiento previo: régimen → IV/RV → Greeks → estructura → riesgo $10K.',
+   files:['SKILL.md','watchlist-template.md','alert-rules-template.md','backtest-template.md','lessons.md'],lines:'171 líneas'},
+
+  {id:'sk-email',label:'Email',type:'skills',sz:23,status:'active',
+   desc:'Triage por matriz urgencia/importancia. Resume correos en 1-2 líneas. Sugiere respuestas con templates (agradecimiento, seguimiento, rechazo). No envía automáticamente. Privacidad: sin contenido completo en vault — solo resúmenes.',
+   files:['SKILL.md','triage-rules.md','response-templates.md','lessons.md'],lines:'168 líneas'},
+
+  {id:'sk-social',label:'Social',type:'skills',sz:21,status:'secondary',
+   desc:'Posts Instagram/Facebook, scripts reels, carruseles. Brand voice: directo, educativo, oraciones cortas (máx 20 palabras). 5 CTAs por objetivo. Skill secundario — la PWA ya tiene Social Composer básico en localStorage.',
+   files:['SKILL.md','brand-voice.md','cta-library.md','hashtag-rules.md','templates/post.md','templates/reel.md','templates/carrusel.md'],lines:'290 líneas'},
+
+  {id:'sk-daily',label:'Daily',type:'skills',sz:23,status:'active',
+   desc:'El único skill que lee de TODOS los demás. Brief matutino: compila watchlist + alertas + email pendientes + borradores sociales + últimas 3 investigaciones. Cierre del día: resume actividades, actualiza métricas, lista pendientes.',
+   files:['SKILL.md','morning-brief-template.md','end-of-day-template.md','lessons.md'],lines:'152 líneas'},
+
+  {id:'vault',label:'vault/',type:'vault',sz:32,status:'partial',
+   desc:'Almacén de conocimiento persistente compatible con Obsidian. Frontmatter YAML en todas las notas, wikilinks [[]] para conexiones. 4 notas activas, estructura completa creada esperando ser poblada con el uso diario.',
+   files:['_index.md — Mapa central','research/ — 2 notas','trading/ — watchlist + alertas','daily/ — 1 nota','email/ — .gitignored','social/ — vacío'],lines:'~350 líneas · 4 notas activas'},
+
+  {id:'vt-research',label:'research/',type:'vault',sz:22,status:'active',
+   desc:'2 notas de investigación. NVDA RTX Spark (Score 7.3, Watch): superchip ARM+Blackwell para AI PCs Windows, 7 acciones vinculadas. OPTIONS Methodology (Score 9.0, Buy): framework institucional completo con reglas de riesgo para cuenta $10K.',
+   files:['NVDA-RTX-Spark-2026-06-08.md (81 líneas) · Score 7.3 · Watch','OPTIONS-Trading-Methodology-2026-06-18.md (226 líneas) · Score 9.0 · Buy'],lines:'307 líneas'},
+
+  {id:'vt-trading',label:'trading/',type:'vault',sz:21,status:'partial',
+   desc:'Watchlist: 7 acciones (NVDA+, MSFT+, MediaTek+, QCOM−, INTC−, AMD±, AAPL±). Alertas: ninguna configurada aún. Backtests: carpeta vacía. Crece cada vez que el skill Trading genera output.',
+   files:['watchlist.md — 7 acciones con scores y sentimiento','alertas.md — Sin alertas activas','backtests/ — Vacío'],lines:'54 líneas activas'},
+
+  {id:'vt-daily',label:'daily/',type:'vault',sz:19,status:'partial',
+   desc:'1 nota: 2026-06-08 (investigación NVDA, watchlist inicializada). El vault diario crece con el uso — cada "que hay para hoy" o "cierra el día" genera una nota nueva aquí.',
+   files:['2026-06-08.md (34 líneas)'],lines:'34 líneas · 1 nota'},
+
+  {id:'vt-email',label:'email/',type:'vault',sz:17,status:'empty',
+   desc:'Carpeta .gitignored por privacidad de datos. Templates creados pero sin datos reales. Aquí va el triage de correos Gmail — información sensible que no sube a GitHub.',
+   files:['pendientes.md — Sin correos aún','seguimiento.md — Sin seguimiento aún'],lines:'Vacío · .gitignored'},
+
+  {id:'vt-social',label:'social/',type:'vault',sz:17,status:'empty',
+   desc:'3 subcarpetas (posts/, borradores/, publicados/) vacías. El Social Composer de index.html guarda en localStorage del teléfono. Esta carpeta es para posts generados vía Claude Code.',
+   files:['posts/ — Vacío','borradores/ — Vacío','publicados/ — Vacío'],lines:'0 notas'},
+
+  {id:'pwa',label:'PWA',type:'pwa',sz:27,status:'active',
+   desc:'Progressive Web App instalable en Android. Funciona offline (Service Worker cache-first). GitHub Pages público: jorgelsa89.github.io/research-os-mobile-brief. Incluye Social Composer y enlace a JARVIS.',
+   files:['index.html','jarvis.html','styles.css','manifest.webmanifest','sw.js','serve.mjs (local)'],lines:'~2,100 líneas'},
+
+  {id:'jarvis-html',label:'jarvis.html',type:'pwa',sz:24,status:'active',
+   desc:'1,126 líneas. Orbe animado (idle→listening→processing→speaking→error). Reconocimiento de voz Web Speech API (es-MX). TTS nativo. Streaming Ollama (qwen3:8b default). Últimas 10 mensajes de contexto. Settings: URL, modelo, voz, tasa, wake word.',
+   files:['jarvis.html'],lines:'1,126 líneas'},
+
+  {id:'index-html',label:'index.html',type:'pwa',sz:19,status:'active',
+   desc:'396 líneas. Dashboard: hero card NVDA (Score 7.3), scorecard visual, 7 acciones con sentimiento, señales a vigilar, Social Composer Instagram/Facebook, sistema de borradores localStorage. Link a JARVIS en header.',
+   files:['index.html'],lines:'396 líneas'},
+
+  {id:'robin-hood',label:'Robin Hood Agent',type:'external',sz:26,status:'infrastructure',
+   desc:'50 activos monitoreados: SPX, QQQ, IWM, NVDA, AAPL, MSFT, GOOGL, AMZN, META, AMD, AVGO, TSLA, GS, JPM, TLT, VIX y más. 111 tests. Infraestructura completa lista. Pendiente: Schwab/thinkorswim API key para opciones scanning en tiempo real.',
+   files:['Proyecto separado','options_strategy_memory.json','options_risk_policy.json','111 tests pasando'],lines:'Infraestructura lista · API pendiente'},
+
+  {id:'mt5-ftmo',label:'MT5/FTMO Bot',type:'external',sz:21,status:'active',
+   desc:'Trading automatizado activo. Pine Script en TradingView + PineConnector → MT5. VPS en Nueva York. FTMO challenge. Estrategia: SMC/ICT, LIT, liquidez, estructura de mercado (CHOCH, IPA/EPA). Mercado principal: EURUSD Forex.',
+   files:['Proyecto separado','Pine Script estrategias','MT5 Expert Advisor','VPS NY activo'],lines:'Activo'},
+
+  {id:'email-agent',label:'Email Agent',type:'external',sz:19,status:'planned',
+   desc:'Gestión de Gmail/correo pendiente de implementar. Lee brain/sync/shared-context.md para saber quién es Jorge. Se conecta con vault/email/ de Research OS para triage. Esperando datos de Google Takeout para configurar.',
+   files:['brain/sync/shared-context.md (referencia)','vault/email/ (destino)'],lines:'Planificado'},
+];
+
+const links = [
+  {s:'claude-md',t:'jarvis',lbl:'dirige',tp:'core'},
+  {s:'jarvis',t:'brain',lbl:'lee',tp:'reads'},
+  {s:'jarvis',t:'skills',lbl:'activa',tp:'activates'},
+  {s:'jarvis',t:'vault',lbl:'accede',tp:'reads'},
+  {s:'jarvis',t:'pwa',lbl:'interfaz',tp:'interface'},
+  {s:'brain',t:'brain-identity',lbl:'contiene',tp:'contains'},
+  {s:'brain',t:'brain-memory',lbl:'contiene',tp:'contains'},
+  {s:'brain',t:'brain-sync',lbl:'contiene',tp:'contains'},
+  {s:'brain',t:'brain-security',lbl:'contiene',tp:'contains'},
+  {s:'brain-identity',t:'brain-security',lbl:'cifrado por',tp:'security'},
+  {s:'brain-sync',t:'robin-hood',lbl:'contexto',tp:'sync'},
+  {s:'brain-sync',t:'mt5-ftmo',lbl:'contexto',tp:'sync'},
+  {s:'brain-sync',t:'email-agent',lbl:'contexto',tp:'sync'},
+  {s:'skills',t:'sk-research',lbl:'módulo',tp:'contains'},
+  {s:'skills',t:'sk-trading',lbl:'módulo',tp:'contains'},
+  {s:'skills',t:'sk-email',lbl:'módulo',tp:'contains'},
+  {s:'skills',t:'sk-social',lbl:'módulo',tp:'contains'},
+  {s:'skills',t:'sk-daily',lbl:'módulo',tp:'contains'},
+  {s:'sk-research',t:'vt-research',lbl:'escribe',tp:'writes'},
+  {s:'sk-trading',t:'vt-trading',lbl:'escribe',tp:'writes'},
+  {s:'sk-email',t:'vt-email',lbl:'escribe',tp:'writes'},
+  {s:'sk-social',t:'vt-social',lbl:'escribe',tp:'writes'},
+  {s:'sk-daily',t:'vt-daily',lbl:'escribe',tp:'writes'},
+  {s:'sk-daily',t:'vt-research',lbl:'lee',tp:'reads'},
+  {s:'sk-daily',t:'vt-trading',lbl:'lee',tp:'reads'},
+  {s:'vault',t:'vt-research',lbl:'contiene',tp:'contains'},
+  {s:'vault',t:'vt-trading',lbl:'contiene',tp:'contains'},
+  {s:'vault',t:'vt-daily',lbl:'contiene',tp:'contains'},
+  {s:'vault',t:'vt-email',lbl:'contiene',tp:'contains'},
+  {s:'vault',t:'vt-social',lbl:'contiene',tp:'contains'},
+  {s:'pwa',t:'jarvis-html',lbl:'contiene',tp:'contains'},
+  {s:'pwa',t:'index-html',lbl:'contiene',tp:'contains'},
+  {s:'vt-research',t:'vt-trading',lbl:'informa',tp:'informs'},
+  {s:'robin-hood',t:'vt-trading',lbl:'alimenta',tp:'feeds'},
+];
+
+// ── D3 SIMULATION ──────────────────────────────────────────────
+const gc = document.getElementById('gc');
+const W = gc.clientWidth, H = gc.clientHeight;
+const svg = d3.select('#graph').attr('width',W).attr('height',H);
+const defs = svg.append('defs');
+
+['arrow','arrow-dim'].forEach((id,i) => {
+  defs.append('marker').attr('id',id)
+    .attr('viewBox','0 -5 10 10').attr('refX',22).attr('refY',0)
+    .attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-5L10,0L0,5')
+    .attr('fill', i===0 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.04)');
+});
+
+const g = svg.append('g');
+const zoom = d3.zoom().scaleExtent([0.2,4])
+  .on('zoom', e => g.attr('transform', e.transform));
+svg.call(zoom);
+
+document.getElementById('zi').onclick = () => svg.transition().call(zoom.scaleBy,1.35);
+document.getElementById('zo').onclick = () => svg.transition().call(zoom.scaleBy,0.75);
+document.getElementById('zr').onclick = () => svg.transition().call(zoom.transform, d3.zoomIdentity.translate(W/2,H/2).scale(0.8));
+
+const simLinks = links.map(l => ({...l, source:l.s, target:l.t}));
+
+const sim = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(simLinks).id(d=>d.id)
+    .distance(d => ({core:90,contains:75,reads:150,writes:150,activates:140,interface:130,sync:200,security:60,informs:120,feeds:160}[d.tp]||130))
+    .strength(0.65))
+  .force('charge', d3.forceManyBody().strength(d => -(d.sz||20)*14))
+  .force('center', d3.forceCenter(W/2, H/2))
+  .force('collision', d3.forceCollide().radius(d => (d.sz||20)+22));
+
+const jn = nodes.find(n=>n.id==='jarvis');
+if(jn) { jn.fx=W/2; jn.fy=H/2; }
+
+// Link colors
+const LC = {reads:'rgba(87,168,255,.35)',writes:'rgba(0,212,160,.35)',contains:'rgba(255,255,255,.1)',
+  activates:'rgba(0,212,160,.5)',interface:'rgba(168,85,247,.5)',sync:'rgba(255,107,53,.35)',
+  security:'rgba(255,71,87,.5)',informs:'rgba(245,166,35,.35)',feeds:'rgba(255,107,53,.4)',core:'rgba(255,255,255,.6)'};
+
+const lnkSel = g.append('g').selectAll('line').data(simLinks).enter().append('line')
+  .attr('class','lnk')
+  .attr('stroke', d => LC[d.tp]||'rgba(255,255,255,.1)')
+  .attr('stroke-width', d => d.tp==='core'?2.5:d.tp==='contains'?.8:1.5)
+  .attr('stroke-dasharray', d => d.tp==='contains'?'3,3':null)
+  .attr('marker-end', d => d.tp!=='contains'?'url(#arrow)':null);
+
+const nodeSel = g.append('g').selectAll('.node').data(nodes).enter().append('g')
+  .attr('class','node')
+  .call(d3.drag()
+    .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on('drag',(e,d)=>{ d.fx=e.x; d.fy=e.y; })
+    .on('end',(e,d)=>{ if(!e.active) sim.alphaTarget(0); if(d.id!=='jarvis'){d.fx=null;d.fy=null;} })
+  );
+
+// Glow filter
+const filt = defs.append('filter').attr('id','glow');
+filt.append('feGaussianBlur').attr('stdDeviation','4').attr('result','coloredBlur');
+const fm = filt.append('feMerge');
+fm.append('feMergeNode').attr('in','coloredBlur');
+fm.append('feMergeNode').attr('in','SourceGraphic');
+
+// Circle
+nodeSel.append('circle')
+  .attr('r', d=>d.sz||20)
+  .attr('fill', d => d.id==='jarvis' ? C[d.type]+'18' : C[d.type]+'12')
+  .attr('stroke', d => C[d.type]||'#fff')
+  .attr('stroke-width', d => d.id==='jarvis'?3:d.status==='encrypted'?2.5:1.5)
+  .attr('stroke-dasharray', d => d.status==='planned'?'5,4':null)
+  .style('filter', d => d.status==='active'||d.id==='jarvis'?'url(#glow)':null);
+
+// Status dot
+nodeSel.append('circle').attr('class','status-dot')
+  .attr('r',3.5)
+  .attr('cx', d=>(d.sz||20)*.72)
+  .attr('cy', d=>-(d.sz||20)*.72)
+  .attr('fill', d=>SC[d.status]||'#7d8590')
+  .attr('stroke','#070a0f').attr('stroke-width',1.5);
+
+// Label
+nodeSel.append('text')
+  .attr('dy', d=>(d.sz||20)+13)
+  .text(d=>d.label)
+  .attr('fill', d=>C[d.type]||'#fff')
+  .attr('font-size', d=>d.id==='jarvis'?13:d.sz>28?11:10)
+  .attr('font-weight', d=>d.id==='jarvis'?800:600)
+  .attr('text-anchor','middle')
+  .style('text-shadow','0 0 8px currentColor');
+
+// Pulse JARVIS
+(function pulse() {
+  nodeSel.filter(d=>d.id==='jarvis').select('circle')
+    .transition().duration(1400).attr('stroke-width',5)
+    .transition().duration(1400).attr('stroke-width',3)
+    .on('end', pulse);
+})();
+
+sim.on('tick',()=>{
+  lnkSel.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+         .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+  nodeSel.attr('transform',d=>`translate(${d.x},${d.y})`);
+});
+
+// Initial zoom
+svg.call(zoom.transform, d3.zoomIdentity.translate(W/2,H/2).scale(0.82).translate(-W/2,-H/2));
+
+// ── PANEL ──────────────────────────────────────────────────────
+const panel = document.getElementById('panel');
+const pcontent = document.getElementById('pcontent');
+const tip = document.getElementById('tip');
+
+function openPanel(d) {
+  const col = C[d.type]||'#fff';
+  const scol = SC[d.status]||'#7d8590';
+  const out = simLinks.filter(l=>l.source.id===d.id);
+  const inc = simLinks.filter(l=>l.target.id===d.id);
+
+  pcontent.innerHTML = `
+    <div class="pbadge" style="background:${col}1a;color:${col};border:1px solid ${col}33">${TL[d.type]||d.type}</div>
+    <div class="ptitle">${d.label}</div>
+    <div class="pstatus">
+      <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${scol}"></span>
+      ${SL[d.status]||d.status}${d.lines?` · ${d.lines}`:''}
+    </div>
+    <div class="pdesc" style="border-left-color:${col}">${d.desc}</div>
+    ${d.files?`<div class="psec"><h4>Archivos</h4>${d.files.map(f=>`<div class="pfile">${f}</div>`).join('')}</div>`:''}
+    ${out.length?`<div class="psec"><h4>Sale hacia →</h4>${out.map(l=>{
+      const tn = nodes.find(n=>n.id===l.target.id);
+      return `<div class="pconn" onclick="focusNode('${l.target.id}')">
+        <span class="pconn-label">${l.lbl||''}</span>
+        <span class="pconn-name" style="color:${C[(tn||{}).type]||'#fff'}">${l.target.label||l.target.id}</span>
+      </div>`;}).join('')}</div>`:''}
+    ${inc.length?`<div class="psec"><h4>Viene de ←</h4>${inc.map(l=>{
+      const sn = nodes.find(n=>n.id===l.source.id);
+      return `<div class="pconn" onclick="focusNode('${l.source.id}')">
+        <span class="pconn-name" style="color:${C[(sn||{}).type]||'#fff'}">${l.source.label||l.source.id}</span>
+        <span class="pconn-label">${l.lbl||''}</span>
+      </div>`;}).join('')}</div>`:''}
+  `;
+  panel.classList.add('open');
+}
+
+document.getElementById('pclose').addEventListener('click', e => { e.stopPropagation(); closePanel(); clearHL(); });
+svg.on('click', () => { closePanel(); clearHL(); });
+function closePanel() { panel.classList.remove('open'); }
+
+function hlConn(d) {
+  const ids = new Set([d.id]);
+  simLinks.forEach(l => {
+    if(l.source.id===d.id) ids.add(l.target.id);
+    if(l.target.id===d.id) ids.add(l.source.id);
+  });
+  nodeSel.classed('dim', n => !ids.has(n.id));
+  lnkSel.classed('dim', l => !ids.has(l.source.id)||!ids.has(l.target.id));
+}
+function clearHL() { nodeSel.classed('dim',false); lnkSel.classed('dim',false); }
+
+nodeSel
+  .on('mouseover',(e,d) => {
+    tip.style.display='block';
+    tip.innerHTML=`<strong style="color:${C[d.type]}">${d.label}</strong><span>${d.desc.slice(0,90)}…</span>`;
+  })
+  .on('mousemove', e => { tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-8)+'px'; })
+  .on('mouseout', () => { tip.style.display='none'; })
+  .on('click',(e,d) => { e.stopPropagation(); tip.style.display='none'; openPanel(d); hlConn(d); });
+
+// ── FILTERS ────────────────────────────────────────────────────
+document.querySelectorAll('.fb').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    const t = btn.dataset.t;
+    if(t==='all') { clearHL(); return; }
+    const ids = new Set(nodes.filter(n=>n.type===t).map(n=>n.id));
+    nodeSel.classed('dim', n => !ids.has(n.id));
+    lnkSel.classed('dim', l => !ids.has(l.source.id)&&!ids.has(l.target.id));
+    closePanel();
+  });
+});
+
+// Global for panel clicks
+window.focusNode = id => {
+  const d = nodes.find(n=>n.id===id);
+  if(!d) return;
+  openPanel(d); hlConn(d);
+  if(d.x&&d.y) svg.transition().duration(500)
+    .call(zoom.transform, d3.zoomIdentity.translate(W/2-d.x,H/2-d.y).scale(1));
+};
+</script>
+</body>
+</html>
