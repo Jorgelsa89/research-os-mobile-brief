@@ -1,7 +1,9 @@
-const CACHE_NAME = "research-os-mobile-v2";
+const CACHE_NAME = "research-os-mobile-v4";
 const ASSETS = [
   "./",
   "./index.html",
+  "./jarvis.html",
+  "./brain.html",
   "./styles.css",
   "./manifest.webmanifest",
   "./icons/icon-192.png",

@@ -39,6 +39,20 @@
   ],
   "shortcuts": [
     {
+      "name": "Brain Map",
+      "short_name": "Brain",
+      "description": "Mapa interactivo del cerebro digital",
+      "url": "/research-os-mobile-brief/brain.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "JARVIS",
+      "short_name": "Jarvis",
+      "description": "Asistente de voz JARVIS",
+      "url": "/research-os-mobile-brief/jarvis.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Brief NVIDIA",
       "short_name": "NVIDIA",
       "description": "Open the current Research OS mobile brief.",

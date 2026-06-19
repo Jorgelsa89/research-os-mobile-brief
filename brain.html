@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brain Map — Research OS</title>
+<style>
+:root{--bg:#070a0f;--panel:#0d1117;--border:rgba(255,255,255,.07);--text:#e6edf3;--dim:#7d8590;
+  --blue:#57a8ff;--cyan:#00d4a0;--amber:#f5a623;--purple:#a855f7;--orange:#ff6b35;--red:#ff4757;--green:#2ecc71}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;height:100%;width:100%}
+#c{position:fixed;inset:0;z-index:1;cursor:grab}
+#c.grabbing{cursor:grabbing}
+
+header{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;background:rgba(7,10,15,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);gap:10px}
+h1{font-size:15px;font-weight:800;color:var(--blue);white-space:nowrap}
+h1 em{color:var(--dim);font-size:10px;font-weight:400;font-style:normal;margin-left:8px}
+.fbar{display:flex;gap:4px;flex-wrap:wrap}
+.fb{padding:3px 10px;border-radius:999px;border:1px solid var(--border);background:transparent;
+  color:var(--dim);font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .18s}
+.fb:hover,.fb.on{border-color:var(--blue);color:var(--blue);background:rgba(87,168,255,.1)}
+.fb[data-t=brain].on{border-color:var(--blue);color:var(--blue);background:rgba(87,168,255,.1)}
+.fb[data-t=skills].on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,160,.1)}
+.fb[data-t=vault].on{border-color:var(--amber);color:var(--amber);background:rgba(245,166,35,.1)}
+.fb[data-t=pwa].on{border-color:var(--purple);color:var(--purple);background:rgba(168,85,247,.1)}
+.fb[data-t=external].on{border-color:var(--orange);color:var(--orange);background:rgba(255,107,53,.1)}
+
+#panel{position:fixed;right:0;top:0;bottom:0;width:300px;background:rgba(7,10,15,.97);
+  border-left:1px solid var(--border);padding:50px 16px 16px;z-index:20;overflow-y:auto;
+  transform:translateX(100%);transition:transform .25s ease}
+#panel.open{transform:translateX(0)}
+#px{position:absolute;top:14px;right:14px;background:transparent;border:1px solid var(--border);
+  color:var(--dim);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center}
+#px:hover{color:var(--text)}
+.pbadge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;
+  font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.ptitle{font-size:19px;font-weight:800;margin-bottom:4px;line-height:1.2}
+.pstatus{font-size:11px;color:var(--dim);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.pdesc{font-size:12px;line-height:1.65;background:rgba(255,255,255,.03);padding:10px 12px;
+  border-radius:8px;border-left:3px solid;margin-bottom:12px}
+.psec{margin-bottom:11px}
+.psec h4{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.pfile{padding:4px 8px;background:rgba(255,255,255,.03);border-radius:5px;margin-bottom:3px;
+  font-size:10px;font-family:monospace;color:var(--dim)}
+.pconn{display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,.03);
+  border-radius:6px;margin-bottom:3px;font-size:11px;cursor:pointer;transition:background .15s}
+.pconn:hover{background:rgba(255,255,255,.07)}
+.pconn-lbl{color:var(--dim);font-size:10px}
+.pconn-name{margin-left:auto;font-weight:700;font-size:11px}
+
+#legend{position:fixed;left:12px;bottom:12px;background:rgba(7,10,15,.9);border:1px solid var(--border);
+  border-radius:10px;padding:10px 13px;z-index:10}
+.lt{font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.li{display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:10px;color:var(--dim)}
+.ld{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+#stats{position:fixed;right:12px;bottom:12px;background:rgba(7,10,15,.9);border:1px solid var(--border);
+  border-radius:10px;padding:10px 13px;z-index:10;text-align:right}
+.sr{display:flex;justify-content:space-between;gap:16px;margin-bottom:3px}
+.sl{font-size:10px;color:var(--dim)}.sv{font-size:10px;font-weight:700}
+
+#zc{position:fixed;left:12px;top:56px;display:flex;flex-direction:column;gap:4px;z-index:10}
+.zb{width:28px;height:28px;background:rgba(7,10,15,.9);border:1px solid var(--border);border-radius:7px;
+  color:var(--dim);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.zb:hover{color:var(--text);border-color:var(--dim)}
+
+#tip{position:fixed;background:rgba(7,10,15,.97);border:1px solid var(--border);border-radius:8px;
+  padding:7px 11px;font-size:11px;pointer-events:none;z-index:30;max-width:180px;display:none}
+#tip strong{display:block;margin-bottom:2px}
+#tip span{color:var(--dim);font-size:10px;line-height:1.4}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<header>
+  <h1>🧠 Brain Map <em>Research OS · Jorge Silva · 2026</em></h1>
+  <div class="fbar">
+    <button class="fb on" data-t="all">Todo</button>
+    <button class="fb" data-t="core">Núcleo</button>
+    <button class="fb" data-t="brain">Memoria</button>
+    <button class="fb" data-t="skills">Skills</button>
+    <button class="fb" data-t="vault">Vault</button>
+    <button class="fb" data-t="pwa">Interfaz</button>
+    <button class="fb" data-t="external">Proyectos</button>
+  </div>
+</header>
+
+<div id="zc">
+  <button class="zb" id="zi" title="Acercar">+</button>
+  <button class="zb" id="zr" title="Resetear">⊙</button>
+  <button class="zb" id="zo" title="Alejar">−</button>
+</div>
+
+<div id="panel">
+  <button id="px">×</button>
+  <div id="pc"></div>
+</div>
+
+<div id="tip"></div>
+
+<div id="legend">
+  <div class="lt">Tipo de nodo</div>
+  <div class="li"><div class="ld" style="background:#fff"></div>Núcleo</div>
+  <div class="li"><div class="ld" style="background:#57a8ff"></div>Memoria</div>
+  <div class="li"><div class="ld" style="background:#00d4a0"></div>Skills</div>
+  <div class="li"><div class="ld" style="background:#f5a623"></div>Vault</div>
+  <div class="li"><div class="ld" style="background:#a855f7"></div>Interfaz</div>
+  <div class="li"><div class="ld" style="background:#ff6b35"></div>Proyectos ext.</div>
+  <div class="lt" style="margin-top:8px">Estado</div>
+  <div class="li"><div class="ld" style="background:#2ecc71"></div>Activo</div>
+  <div class="li"><div class="ld" style="background:#f5a623"></div>Parcial</div>
+  <div class="li"><div class="ld" style="background:#7d8590;border:1px dashed #7d8590"></div>Planificado</div>
+  <div class="li"><div class="ld" style="background:#ff4757"></div>Encriptado 🔒</div>
+</div>
+
+<div id="stats">
+  <div class="lt">Sistema</div>
+  <div class="sr"><span class="sl">Archivos</span><span class="sv">91</span></div>
+  <div class="sr"><span class="sl">Líneas</span><span class="sv">5,927</span></div>
+  <div class="sr"><span class="sl">Skills</span><span class="sv">5</span></div>
+  <div class="sr"><span class="sl">Vault notas</span><span class="sv">4</span></div>
+  <div class="sr"><span class="sl">Estado</span><span class="sv" style="color:#2ecc71">ACTIVO</span></div>
+</div>
+
+<script>
+// ── COLORS & DATA ───────────────────────────────────────────────
+const COL = {core:'#ffffff',brain:'#57a8ff',skills:'#00d4a0',vault:'#f5a623',pwa:'#a855f7',external:'#ff6b35'};
+const SCOL = {active:'#2ecc71',empty:'#7d8590',encrypted:'#ff4757',partial:'#f5a623',planned:'#7d8590',secondary:'#7d8590',infrastructure:'#57a8ff'};
+const TL = {core:'Núcleo',brain:'Memoria',skills:'Skills',vault:'Vault',pwa:'Interfaz',external:'Proyecto Externo'};
+const SL = {active:'Activo',empty:'Vacío',encrypted:'Encriptado 🔒',partial:'Parcial',planned:'Planificado',secondary:'Secundario',infrastructure:'Infraestructura lista'};
+
+const NODES = [
+  {id:'jarvis',label:'JARVIS',type:'core',r:42,status:'active',fixed:true,
+   desc:'Sistema central del Agentic OS personal de Jorge. Asistente AI con personalidad híbrida: formal en reportes ("Score 7.3. Decisión: Watch."), casual en chat. Memoria persistente en múltiples capas, 5 skills, voz via Ollama + Web Speech API.',
+   files:['CLAUDE.md — Cerebro central (124 líneas)','jarvis.html — Interfaz voz/chat (1,126 líneas)','brain/ — Memoria persistente','skills/ — 5 módulos especializados','vault/ — Conocimiento acumulado'],lines:'~5,927 líneas · 91 archivos totales'},
+
+  {id:'claude-md',label:'CLAUDE.md',type:'core',r:24,status:'active',
+   desc:'124 líneas. Instrucciones maestras: personalidad Jarvis, tabla de 5 skills con triggers de activación, scorecard de 8 métricas (Buy/Watch/Skip), reglas operación, convenciones vault, arquitectura cerebro, red de proyectos.',
+   files:['CLAUDE.md'],lines:'124 líneas'},
+
+  {id:'brain',label:'brain/',type:'brain',r:30,status:'active',
+   desc:'Cerebro digital modelado como capas neuronales. 4 subcarpetas: identity (datos cifrados AES-256), memory (preferencias, patrones, prioridades), sync (contexto compartido entre proyectos), security (motor de encriptación).',
+   files:['brain/README.md (116 líneas)','brain/identity/ — datos cifrados','brain/memory/ — memoria larga duración','brain/sync/ — sincronización cross-project','brain/security/ — motor AES-256'],lines:'~800 líneas · 12 archivos'},
+
+  {id:'brain-id',label:'identity/ 🔒',type:'brain',r:20,status:'encrypted',
+   desc:'AES-256-GCM. Datos personales cifrados con PBKDF2 100K iteraciones SHA-512. profile.json.enc (nombre, dirección FL, 22-May-1989) + contacts.json.enc (familia en Cuba: Vivian, Dayana, Zoe, Regino). Los datos descifrados NUNCA se escriben a disco.',
+   files:['profile.json.enc — Perfil personal','contacts.json.enc — Familia en Cuba'],lines:'Cifrado · acceso via contraseña maestra'},
+
+  {id:'brain-mem',label:'memory/',type:'brain',r:22,status:'active',
+   desc:'Memoria larga duración: preferencias de comunicación (bilingüe, directo, sin azúcar), patrones de trabajo (flujo iterativo: ve → pregunta → "hagámoslo" → revisa), cómo toma decisiones Jorge (scorecard, edge informacional), prioridades vitales, 11 áreas de crecimiento mapeadas.',
+   files:['priorities.md — 5 prioridades','preferences.md — Comunicación y trading','growth-log.md — 11 áreas conocimiento','patterns/workflow.md — Cómo trabaja Jorge','patterns/communication.md — Patrones comunicación','patterns/decisions.md — Framework decisiones','short-term/current-session.md — Contexto sesión'],lines:'~430 líneas'},
+
+  {id:'brain-sync',label:'sync/',type:'brain',r:21,status:'active',
+   desc:'Memoria compartida entre proyectos. shared-context.md: tarjeta de identidad que cualquier AI project lee al iniciar. cross-project.md: 50 activos del universo Robin Hood + integraciones. session-log.md: historial de sesiones de trabajo.',
+   files:['shared-context.md — Identidad Jorge para todos los proyectos','cross-project.md — Mapa 50 activos + integraciones','session-log.md — Historial sesiones','chatgpt-import-guide.md — Migración memorias ChatGPT'],lines:'~400 líneas'},
+
+  {id:'brain-sec',label:'security/',type:'brain',r:17,status:'active',
+   desc:'Motor de encriptación. CLI: node brain/security/crypto.mjs read <categoría>. 4 categorías: profile ✓, contacts ✓, credentials (pendiente), financial (pendiente). La clave maestra nunca se almacena en disco.',
+   files:['crypto.mjs — AES-256-GCM + PBKDF2 100K iteraciones'],lines:'244 líneas'},
+
+  {id:'skills',label:'skills/',type:'skills',r:30,status:'active',
+   desc:'5 módulos especializados. Cada uno tiene SKILL.md (instrucciones de activación y proceso paso a paso), templates de output, y lessons.md para aprendizaje continuo. Se activan por frases clave.',
+   files:['research/ — Investigación financiera','trading/ — Watchlist y alertas','email/ — Gestión de correos','social/ — Contenido redes (secundario)','daily/ — Brief y cierre diario'],lines:'~800 líneas · 28 archivos'},
+
+  {id:'sk-res',label:'Research',type:'skills',r:22,status:'active',
+   desc:'Investiga acciones, noticias tech, cualquier tema. Genera briefs con scorecard 8 métricas: Truth, Confidence, Edge, Opportunity, Risk, Timing, Actionability, Asymmetry. Decisión: Buy (≥8.0) / Watch (6-7.9) / Skip (<6.0). Output en vault/research/.',
+   files:['SKILL.md','brief-template.md','scorecard-template.md','stock-impact-template.md','lessons.md'],lines:'272 líneas'},
+
+  {id:'sk-trd',label:'Trading',type:'skills',r:22,status:'active',
+   desc:'Gestiona watchlist (máx 15 acciones), configura alertas de precio, evalúa backtests MT5/FTMO. Framework completo de opciones institucionales: régimen → IV/RV → Greeks → estructura → riesgo $10K.',
+   files:['SKILL.md','watchlist-template.md','alert-rules-template.md','backtest-template.md','lessons.md'],lines:'171 líneas'},
+
+  {id:'sk-eml',label:'Email',type:'skills',r:22,status:'active',
+   desc:'Triage por matriz urgencia/importancia. Resume en 1-2 líneas. Sugiere respuestas con templates. No envía automáticamente. Privacidad: solo resúmenes en vault, sin contenido completo.',
+   files:['SKILL.md','triage-rules.md','response-templates.md','lessons.md'],lines:'168 líneas'},
+
+  {id:'sk-soc',label:'Social',type:'skills',r:20,status:'secondary',
+   desc:'Posts Instagram/Facebook, scripts reels, carruseles. Brand voice de Jorge: directo, educativo, oraciones cortas (máx 20 palabras). 5 CTAs por objetivo. SKILL SECUNDARIO — la PWA ya tiene Social Composer básico.',
+   files:['SKILL.md','brand-voice.md','cta-library.md','hashtag-rules.md','templates/post.md','templates/reel.md','templates/carrusel.md'],lines:'290 líneas'},
+
+  {id:'sk-day',label:'Daily',type:'skills',r:22,status:'active',
+   desc:'El único skill que lee de TODOS los demás. Brief matutino: compila watchlist + alertas + email pendientes + borradores + últimas 3 investigaciones. Cierre: resume actividades, actualiza métricas, lista pendientes.',
+   files:['SKILL.md','morning-brief-template.md','end-of-day-template.md','lessons.md'],lines:'152 líneas'},
+
+  {id:'vault',label:'vault/',type:'vault',r:30,status:'partial',
+   desc:'Almacén de conocimiento persistente. Compatible con Obsidian: frontmatter YAML + wikilinks [[]]. 4 notas activas ahora, estructura completa creada esperando llenarse con el uso diario del sistema.',
+   files:['_index.md — Mapa central','research/ — 2 notas activas','trading/ — watchlist + alertas','daily/ — 1 nota','email/ — .gitignored','social/ — vacío'],lines:'~350 líneas · 4 notas activas'},
+
+  {id:'vt-res',label:'research/',type:'vault',r:21,status:'active',
+   desc:'2 notas. NVDA RTX Spark (Score 7.3, Watch): superchip ARM+Blackwell para AI PCs Windows, 7 acciones vinculadas analizadas. OPTIONS Methodology (Score 9.0, Buy): framework institucional completo con reglas riesgo para cuenta $10K. Importado desde conocimiento previo.',
+   files:['NVDA-RTX-Spark-2026-06-08.md (81 líneas) · Score 7.3 · Watch','OPTIONS-Trading-Methodology-2026-06-18.md (226 líneas) · Score 9.0 · Buy'],lines:'307 líneas · 2 notas'},
+
+  {id:'vt-trd',label:'trading/',type:'vault',r:20,status:'partial',
+   desc:'Watchlist: 7 acciones con sentimiento y scores (NVDA+7.2, MSFT+7.0, MediaTek+7.1, QCOM−6.4, INTC−6.1, AMD±6.0, AAPL±5.8). Alertas: ninguna configurada aún. Backtests: vacío.',
+   files:['watchlist.md — 7 acciones','alertas.md — Sin alertas activas','backtests/ — Vacío'],lines:'54 líneas'},
+
+  {id:'vt-day',label:'daily/',type:'vault',r:18,status:'partial',
+   desc:'1 nota: 2026-06-08. Crece con el uso — cada "que hay para hoy" o "cierra el día" genera una nota nueva aquí.',
+   files:['2026-06-08.md (34 líneas) — Solo 1 nota'],lines:'34 líneas · 1 nota'},
+
+  {id:'vt-eml',label:'email/',type:'vault',r:16,status:'empty',
+   desc:'.gitignored por privacidad. Templates creados pero sin datos reales. Aquí va el triage de correos Gmail. Información sensible que no sube a GitHub.',
+   files:['pendientes.md — Vacío','seguimiento.md — Vacío'],lines:'Vacío · .gitignored'},
+
+  {id:'vt-soc',label:'social/',type:'vault',r:16,status:'empty',
+   desc:'3 subcarpetas vacías: posts/, borradores/, publicados/. El Social Composer en index.html guarda en localStorage. Esta carpeta es para posts generados via Claude Code.',
+   files:['posts/ — Vacío','borradores/ — Vacío','publicados/ — Vacío'],lines:'0 notas'},
+
+  {id:'pwa',label:'PWA',type:'pwa',r:26,status:'active',
+   desc:'Progressive Web App instalable en Android. Funciona offline (Service Worker cache-first). URL pública: jorgelsa89.github.io/research-os-mobile-brief. Incluye Social Composer y enlace a JARVIS y Brain Map.',
+   files:['index.html (396 líneas)','jarvis.html (1,126 líneas)','styles.css (480 líneas)','manifest.webmanifest','sw.js','serve.mjs (servidor local)'],lines:'~2,100 líneas'},
+
+  {id:'jarvis-h',label:'jarvis.html',type:'pwa',r:22,status:'active',
+   desc:'1,126 líneas. Orbe animado con 5 estados (idle/listening/processing/speaking/error). Reconocimiento de voz Web Speech API en español. TTS nativo. Streaming Ollama (qwen3:8b). Últimas 10 mensajes de contexto. Panel de settings.',
+   files:['jarvis.html'],lines:'1,126 líneas'},
+
+  {id:'idx-h',label:'index.html',type:'pwa',r:18,status:'active',
+   desc:'396 líneas. Dashboard: hero card NVDA (7.3), scorecard visual, 7 acciones con sentimiento, señales a vigilar, Social Composer Instagram/Facebook con borradores en localStorage.',
+   files:['index.html'],lines:'396 líneas'},
+
+  {id:'robin',label:'Robin Hood Agent',type:'external',r:25,status:'infrastructure',
+   desc:'50 activos: SPX, QQQ, IWM, NVDA, AAPL, MSFT, GOOGL, AMZN, META, AMD, AVGO, TSLA, GS, JPM, TLT, VIX y más. 111 tests pasando. Infraestructura lista. PENDIENTE: Schwab/thinkorswim API key para opciones scanning en tiempo real.',
+   files:['Proyecto separado','options_strategy_memory.json','options_risk_policy.json','111 tests'],lines:'Infraestructura lista · API pendiente'},
+
+  {id:'mt5',label:'MT5/FTMO Bot',type:'external',r:20,status:'active',
+   desc:'Trading automatizado activo. Pine Script en TradingView + PineConnector → MT5. VPS en Nueva York. FTMO challenge. Estrategia: SMC/ICT, LIT, liquidez, estructura de mercado (CHOCH, IPA/EPA). Mercado: EURUSD Forex.',
+   files:['Proyecto separado','Pine Script estrategias','MT5 Expert Advisor','VPS NY activo'],lines:'Activo'},
+
+  {id:'emailag',label:'Email Agent',type:'external',r:18,status:'planned',
+   desc:'Gestión de Gmail pendiente. Lee brain/sync/shared-context.md para contexto de Jorge. Se conecta con vault/email/. Esperando Google Takeout data para configurar correctamente.',
+   files:['brain/sync/shared-context.md (referencia)','vault/email/ (destino)'],lines:'Planificado'},
+];
+
+const LINKS = [
+  {s:'claude-md',t:'jarvis',lbl:'dirige',tp:'core'},
+  {s:'jarvis',t:'brain',lbl:'lee',tp:'reads'},
+  {s:'jarvis',t:'skills',lbl:'activa',tp:'act'},
+  {s:'jarvis',t:'vault',lbl:'accede',tp:'reads'},
+  {s:'jarvis',t:'pwa',lbl:'interfaz',tp:'iface'},
+  {s:'brain',t:'brain-id',lbl:'contiene',tp:'has'},
+  {s:'brain',t:'brain-mem',lbl:'contiene',tp:'has'},
+  {s:'brain',t:'brain-sync',lbl:'contiene',tp:'has'},
+  {s:'brain',t:'brain-sec',lbl:'contiene',tp:'has'},
+  {s:'brain-id',t:'brain-sec',lbl:'cifrado por',tp:'sec'},
+  {s:'brain-sync',t:'robin',lbl:'contexto',tp:'sync'},
+  {s:'brain-sync',t:'mt5',lbl:'contexto',tp:'sync'},
+  {s:'brain-sync',t:'emailag',lbl:'contexto',tp:'sync'},
+  {s:'skills',t:'sk-res',lbl:'módulo',tp:'has'},
+  {s:'skills',t:'sk-trd',lbl:'módulo',tp:'has'},
+  {s:'skills',t:'sk-eml',lbl:'módulo',tp:'has'},
+  {s:'skills',t:'sk-soc',lbl:'módulo',tp:'has'},
+  {s:'skills',t:'sk-day',lbl:'módulo',tp:'has'},
+  {s:'sk-res',t:'vt-res',lbl:'escribe',tp:'writes'},
+  {s:'sk-trd',t:'vt-trd',lbl:'escribe',tp:'writes'},
+  {s:'sk-eml',t:'vt-eml',lbl:'escribe',tp:'writes'},
+  {s:'sk-soc',t:'vt-soc',lbl:'escribe',tp:'writes'},
+  {s:'sk-day',t:'vt-day',lbl:'escribe',tp:'writes'},
+  {s:'sk-day',t:'vt-res',lbl:'lee',tp:'reads'},
+  {s:'sk-day',t:'vt-trd',lbl:'lee',tp:'reads'},
+  {s:'vault',t:'vt-res',lbl:'contiene',tp:'has'},
+  {s:'vault',t:'vt-trd',lbl:'contiene',tp:'has'},
+  {s:'vault',t:'vt-day',lbl:'contiene',tp:'has'},
+  {s:'vault',t:'vt-eml',lbl:'contiene',tp:'has'},
+  {s:'vault',t:'vt-soc',lbl:'contiene',tp:'has'},
+  {s:'pwa',t:'jarvis-h',lbl:'contiene',tp:'has'},
+  {s:'pwa',t:'idx-h',lbl:'contiene',tp:'has'},
+  {s:'vt-res',t:'vt-trd',lbl:'informa',tp:'reads'},
+  {s:'robin',t:'vt-trd',lbl:'alimenta',tp:'writes'},
+];
+
+// ── CANVAS ENGINE ───────────────────────────────────────────────
+const cv = document.getElementById('c');
+const cx = cv.getContext('2d');
+
+function resize() {
+  cv.width = innerWidth;
+  cv.height = innerHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); resetLayout(); });
+
+// ── FORCE LAYOUT ─────────────────────────────────────────────────
+let W, H;
+
+function resetLayout() {
+  W = cv.width; H = cv.height;
+  // Place JARVIS at center
+  const jn = NODES.find(n=>n.id==='jarvis');
+  jn.x = W/2; jn.y = H/2; jn.vx=0; jn.vy=0;
+
+  // Arrange others in rough rings
+  const others = NODES.filter(n=>n.id!=='jarvis');
+  const topLevel = ['claude-md','brain','skills','vault','pwa'];
+  const ring1 = NODES.filter(n=>topLevel.includes(n.id));
+  const ring2 = NODES.filter(n=>!topLevel.includes(n.id)&&n.id!=='jarvis'&&
+    ['core','brain','skills','vault','pwa'].includes(n.type));
+  const ext = NODES.filter(n=>n.type==='external');
+
+  const r1 = Math.min(W,H)*0.22;
+  ring1.forEach((n,i)=>{
+    const a = (i/ring1.length)*Math.PI*2 - Math.PI/2;
+    n.x = W/2 + Math.cos(a)*r1 + (Math.random()-.5)*30;
+    n.y = H/2 + Math.sin(a)*r1 + (Math.random()-.5)*30;
+    n.vx=0; n.vy=0;
+  });
+
+  const r2 = Math.min(W,H)*0.42;
+  ring2.forEach((n,i)=>{
+    const a = (i/ring2.length)*Math.PI*2 - Math.PI/2;
+    n.x = W/2 + Math.cos(a)*r2 + (Math.random()-.5)*40;
+    n.y = H/2 + Math.sin(a)*r2 + (Math.random()-.5)*40;
+    n.vx=0; n.vy=0;
+  });
+
+  const r3 = Math.min(W,H)*0.52;
+  ext.forEach((n,i)=>{
+    const a = (i/ext.length)*Math.PI*2 + Math.PI/4;
+    n.x = W/2 + Math.cos(a)*r3;
+    n.y = H/2 + Math.sin(a)*r3;
+    n.vx=0; n.vy=0;
+  });
+}
+resetLayout();
+
+// Build link map for fast lookup
+const linkMap = LINKS.map(l=>({
+  ...l,
+  sn: NODES.find(n=>n.id===l.s),
+  tn: NODES.find(n=>n.id===l.t),
+})).filter(l=>l.sn&&l.tn);
+
+// Force simulation
+const REPEL = 4200, SPRING = 0.04, LEN = 130, DAMP = 0.82, CENTER = 0.012;
+
+function tick() {
+  const jn = NODES.find(n=>n.id==='jarvis');
+
+  NODES.forEach(a=>{
+    if(a.fixed) return;
+    // Center pull
+    a.vx += (W/2 - a.x)*CENTER*0.3;
+    a.vy += (H/2 - a.y)*CENTER*0.3;
+
+    // Repulsion
+    NODES.forEach(b=>{
+      if(a===b) return;
+      const dx=a.x-b.x, dy=a.y-b.y;
+      const d2=dx*dx+dy*dy||1;
+      const d=Math.sqrt(d2);
+      const f=REPEL/(d2*Math.max(d,1));
+      a.vx+=dx*f; a.vy+=dy*f;
+    });
+  });
+
+  // Springs
+  linkMap.forEach(l=>{
+    const a=l.sn, b=l.tn;
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const d=Math.hypot(dx,dy)||1;
+    const tdist = l.tp==='has'?90:LEN;
+    const f=(d-tdist)*SPRING;
+    const fx=dx/d*f, fy=dy/d*f;
+    if(!a.fixed){a.vx+=fx;a.vy+=fy;}
+    if(!b.fixed){b.vx-=fx;b.vy-=fy;}
+  });
+
+  NODES.forEach(n=>{
+    if(n.fixed) return;
+    n.vx*=DAMP; n.vy*=DAMP;
+    n.x+=n.vx; n.y+=n.vy;
+    // Clamp
+    n.x=Math.max(n.r+4, Math.min(W-n.r-4, n.x));
+    n.y=Math.max(n.r+44, Math.min(H-n.r-4, n.y));
+  });
+}
+
+// ── VIEWPORT ────────────────────────────────────────────────────
+let vx=0, vy=0, vz=1;
+
+function toScreen(wx, wy){
+  return {x:(wx+vx)*vz + W/2*(1-vz), y:(wy+vy)*vz + H/2*(1-vz)};
+}
+function toWorld(sx, sy){
+  return {x:(sx - W/2*(1-vz))/vz - vx, y:(sy - H/2*(1-vz))/vz - vy};
+}
+
+// ── FILTER ───────────────────────────────────────────────────────
+let activeFilter = 'all';
+function isVisible(n){ return activeFilter==='all'||n.type===activeFilter; }
+function isLinkVisible(l){ return isVisible(l.sn)&&isVisible(l.tn); }
+
+// ── DRAW ─────────────────────────────────────────────────────────
+let pulse=0;
+let selectedId=null;
+
+const LCOL={core:'rgba(255,255,255,.7)',reads:'rgba(87,168,255,.4)',act:'rgba(0,212,160,.5)',
+  has:'rgba(255,255,255,.12)',iface:'rgba(168,85,247,.5)',sync:'rgba(255,107,53,.4)',
+  sec:'rgba(255,71,87,.5)',writes:'rgba(0,212,160,.4)'};
+
+// Background particles
+const pts=Array.from({length:60},()=>({
+  x:Math.random()*3000-500,y:Math.random()*2000-300,
+  vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.2,r:Math.random()*1.5+.4
+}));
+
+function drawFrame(){
+  cx.clearRect(0,0,W,H);
+
+  // Bg particles
+  cx.save();
+  cx.globalAlpha=0.3;
+  pts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<-600)p.x=W+200; if(p.x>W+400)p.x=-400;
+    if(p.y<-400)p.y=H+200; if(p.y>H+400)p.y=-400;
+    const s=toScreen(p.x,p.y);
+    cx.beginPath();cx.arc(s.x,s.y,p.r,0,Math.PI*2);
+    cx.fillStyle='#57a8ff';cx.fill();
+  });
+  cx.restore();
+
+  // Links
+  linkMap.forEach(l=>{
+    const a=toScreen(l.sn.x,l.sn.y), b=toScreen(l.tn.x,l.tn.y);
+    const vis=isLinkVisible(l);
+    const dimmed=selectedId&&l.sn.id!==selectedId&&l.tn.id!==selectedId;
+    cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);
+    cx.strokeStyle=LCOL[l.tp]||'rgba(255,255,255,.1)';
+    cx.globalAlpha=!vis?0.04:dimmed?0.05:1;
+    cx.lineWidth=l.tp==='core'?2:l.tp==='has'?.7:1.4;
+    cx.setLineDash(l.tp==='has'?[3,3]:[]);
+    cx.stroke();
+    cx.setLineDash([]);
+    cx.globalAlpha=1;
+
+    // Arrow (non-has links)
+    if(l.tp!=='has'&&vis&&!dimmed){
+      const angle=Math.atan2(b.y-a.y,b.x-a.x);
+      const tr=toScreen(l.tn.x,l.tn.y);
+      // Move arrow to edge of target circle
+      const dist=Math.hypot(b.x-a.x,b.y-a.y);
+      const ratio=(dist-l.tn.r*vz-3)/Math.max(dist,1);
+      const ax=a.x+(b.x-a.x)*ratio, ay=a.y+(b.y-a.y)*ratio;
+      cx.save();cx.translate(ax,ay);cx.rotate(angle);
+      cx.beginPath();cx.moveTo(0,0);cx.lineTo(-8,-4);cx.lineTo(-8,4);cx.closePath();
+      cx.fillStyle=LCOL[l.tp]||'rgba(255,255,255,.2)';
+      cx.globalAlpha=.5;cx.fill();cx.restore();cx.globalAlpha=1;
+    }
+  });
+
+  // Nodes
+  pulse=(pulse+0.04)%Math.PI;
+  NODES.forEach(n=>{
+    const p=toScreen(n.x,n.y);
+    const col=COL[n.type]||'#fff';
+    const vis=isVisible(n);
+    const dimmed=selectedId&&n.id!==selectedId&&!isConnected(n.id,selectedId);
+    cx.globalAlpha=!vis?0.08:dimmed?0.1:1;
+
+    // Glow ring (active nodes)
+    if(n.status==='active'&&!dimmed&&vis){
+      const glow=n.id==='jarvis'?18:10;
+      const grd=cx.createRadialGradient(p.x,p.y,n.r*vz,p.x,p.y,n.r*vz+glow);
+      grd.addColorStop(0,col+'44'); grd.addColorStop(1,col+'00');
+      cx.beginPath();cx.arc(p.x,p.y,n.r*vz+glow,0,Math.PI*2);
+      cx.fillStyle=grd;cx.fill();
+    }
+
+    // Pulse ring for JARVIS
+    if(n.id==='jarvis'){
+      const pr=(n.r+8+Math.sin(pulse)*6)*vz;
+      cx.beginPath();cx.arc(p.x,p.y,pr,0,Math.PI*2);
+      cx.strokeStyle=col;cx.globalAlpha=0.25+Math.sin(pulse)*0.15;
+      cx.lineWidth=1.5;cx.stroke();cx.globalAlpha=vis?1:0.08;
+    }
+
+    // Circle fill
+    cx.beginPath();cx.arc(p.x,p.y,n.r*vz,0,Math.PI*2);
+    cx.fillStyle=n.id==='jarvis'?col+'25':col+'15';cx.fill();
+
+    // Circle stroke
+    cx.beginPath();cx.arc(p.x,p.y,n.r*vz,0,Math.PI*2);
+    cx.strokeStyle=col;
+    cx.lineWidth=n.id==='jarvis'?2.5:n.status==='encrypted'?2:1.5;
+    if(n.status==='planned') cx.setLineDash([5,4]);
+    cx.stroke();cx.setLineDash([]);
+
+    // Status dot
+    const sdx=p.x+n.r*vz*.72, sdy=p.y-n.r*vz*.72;
+    cx.beginPath();cx.arc(sdx,sdy,3.5,0,Math.PI*2);
+    cx.fillStyle=SCOL[n.status]||'#7d8590';cx.fill();
+    cx.beginPath();cx.arc(sdx,sdy,3.5,0,Math.PI*2);
+    cx.strokeStyle='#070a0f';cx.lineWidth=1.5;cx.stroke();
+
+    cx.globalAlpha=!vis?0.08:dimmed?0.1:1;
+
+    // Label
+    cx.fillStyle=col;
+    cx.font=`${n.id==='jarvis'?'800':'700'} ${Math.max(8,Math.min(12,n.r*vz*.55+7))}px 'Segoe UI',sans-serif`;
+    cx.textAlign='center';
+    cx.fillText(n.label, p.x, p.y+n.r*vz+13);
+
+    cx.globalAlpha=1;
+  });
+
+  tick();
+  requestAnimationFrame(drawFrame);
+}
+drawFrame();
+
+function isConnected(a, b){
+  return linkMap.some(l=>(l.sn.id===a&&l.tn.id===b)||(l.sn.id===b&&l.tn.id===a));
+}
+
+// ── PANEL ────────────────────────────────────────────────────────
+const panel=document.getElementById('panel');
+const pc=document.getElementById('pc');
+const tip=document.getElementById('tip');
+
+function openPanel(n){
+  selectedId=n.id;
+  const col=COL[n.type]||'#fff';
+  const scol=SCOL[n.status]||'#7d8590';
+  const out=linkMap.filter(l=>l.sn.id===n.id);
+  const inc=linkMap.filter(l=>l.tn.id===n.id);
+
+  pc.innerHTML=`
+    <div class="pbadge" style="background:${col}1a;color:${col};border:1px solid ${col}33">${TL[n.type]||n.type}</div>
+    <div class="ptitle">${n.label}</div>
+    <div class="pstatus">
+      <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${scol}"></span>
+      ${SL[n.status]||n.status}${n.lines?' · '+n.lines:''}
+    </div>
+    <div class="pdesc" style="border-left-color:${col}">${n.desc}</div>
+    ${n.files?`<div class="psec"><h4>Archivos</h4>${n.files.map(f=>`<div class="pfile">${f}</div>`).join('')}</div>`:''}
+    ${out.length?`<div class="psec"><h4>Sale hacia →</h4>${out.map(l=>`
+      <div class="pconn" onclick="focusNode('${l.tn.id}')">
+        <span class="pconn-lbl">${l.lbl}</span>
+        <span class="pconn-name" style="color:${COL[l.tn.type]||'#fff'}">${l.tn.label}</span>
+      </div>`).join('')}</div>`:''}
+    ${inc.length?`<div class="psec"><h4>Viene de ←</h4>${inc.map(l=>`
+      <div class="pconn" onclick="focusNode('${l.sn.id}')">
+        <span class="pconn-name" style="color:${COL[l.sn.type]||'#fff'}">${l.sn.label}</span>
+        <span class="pconn-lbl">${l.lbl}</span>
+      </div>`).join('')}</div>`:''}
+  `;
+  panel.classList.add('open');
+}
+
+document.getElementById('px').onclick=e=>{e.stopPropagation();closePanel();};
+function closePanel(){panel.classList.remove('open');selectedId=null;}
+
+window.focusNode=id=>{
+  const n=NODES.find(n=>n.id===id);
+  if(n){openPanel(n);vx=W/2-n.x;vy=H/2-n.y;}
+};
+
+// ── MOUSE ────────────────────────────────────────────────────────
+let drag=null, lastMX=0, lastMY=0, dragging=false;
+
+function hitTest(mx,my){
+  const w=toWorld(mx,my);
+  for(let i=NODES.length-1;i>=0;i--){
+    const n=NODES[i];
+    if(!isVisible(n)) continue;
+    const dx=n.x-w.x, dy=n.y-w.y;
+    if(dx*dx+dy*dy<=(n.r+6)*(n.r+6)) return n;
+  }
+  return null;
+}
+
+cv.addEventListener('mousedown',e=>{
+  const n=hitTest(e.clientX,e.clientY);
+  if(n){drag={node:n,ox:e.clientX-n.x*vz,oy:e.clientY-n.y*vz};dragging=false;}
+  else{drag={pan:true};}
+  lastMX=e.clientX;lastMY=e.clientY;
+  cv.classList.add('grabbing');
+});
+
+cv.addEventListener('mousemove',e=>{
+  const dx=e.clientX-lastMX, dy=e.clientY-lastMY;
+  if(drag){
+    if(drag.node){
+      if(Math.abs(dx)>2||Math.abs(dy)>2) dragging=true;
+      if(dragging){
+        const w=toWorld(e.clientX,e.clientY);
+        drag.node.x=w.x; drag.node.y=w.y;
+        drag.node.vx=0; drag.node.vy=0;
+      }
+    } else {
+      vx+=dx/vz; vy+=dy/vz;
+    }
+  }
+  lastMX=e.clientX;lastMY=e.clientY;
+
+  const n=hitTest(e.clientX,e.clientY);
+  if(n&&!drag){
+    tip.style.display='block';
+    tip.innerHTML=`<strong style="color:${COL[n.type]}">${n.label}</strong><span>${n.desc.slice(0,85)}…</span>`;
+    tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';
+  } else {
+    tip.style.display='none';
+  }
+});
+
+cv.addEventListener('mouseup',e=>{
+  cv.classList.remove('grabbing');
+  if(drag&&drag.node&&!dragging){
+    tip.style.display='none';
+    openPanel(drag.node);
+  }
+  if(drag&&drag.pan&&Math.abs(e.clientX-lastMX)<3){
+    closePanel();
+  }
+  drag=null;
+});
+
+cv.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const delta=e.deltaY>0?0.88:1.14;
+  const before=toWorld(e.clientX,e.clientY);
+  vz=Math.max(0.2,Math.min(4,vz*delta));
+  const after=toWorld(e.clientX,e.clientY);
+  vx+=after.x-before.x; vy+=after.y-before.y;
+},{passive:false});
+
+// Touch
+let lastTouch=null, lastDist=0;
+cv.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    const t=e.touches[0];
+    lastTouch={x:t.clientX,y:t.clientY};
+    const n=hitTest(t.clientX,t.clientY);
+    if(n) drag={node:n};
+    else drag={pan:true};
+    dragging=false;
+  } else if(e.touches.length===2){
+    const dx=e.touches[0].clientX-e.touches[1].clientX;
+    const dy=e.touches[0].clientY-e.touches[1].clientY;
+    lastDist=Math.hypot(dx,dy);
+    drag=null;
+  }
+},{passive:true});
+
+cv.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&drag){
+    const t=e.touches[0];
+    const dx=t.clientX-lastTouch.x, dy=t.clientY-lastTouch.y;
+    if(drag.node){
+      if(Math.abs(dx)>3||Math.abs(dy)>3) dragging=true;
+      if(dragging){const w=toWorld(t.clientX,t.clientY);drag.node.x=w.x;drag.node.y=w.y;drag.node.vx=0;drag.node.vy=0;}
+    } else {vx+=dx/vz;vy+=dy/vz;}
+    lastTouch={x:t.clientX,y:t.clientY};
+  } else if(e.touches.length===2){
+    const dx=e.touches[0].clientX-e.touches[1].clientX;
+    const dy=e.touches[0].clientY-e.touches[1].clientY;
+    const dist=Math.hypot(dx,dy);
+    const delta=dist/lastDist;
+    vz=Math.max(0.2,Math.min(4,vz*delta));
+    lastDist=dist;
+  }
+},{passive:false});
+
+cv.addEventListener('touchend',e=>{
+  if(drag&&drag.node&&!dragging){openPanel(drag.node);}
+  if(drag&&drag.pan&&!dragging){closePanel();}
+  drag=null;
+});
+
+// ── ZOOM BUTTONS ────────────────────────────────────────────────
+document.getElementById('zi').onclick=()=>{vz=Math.min(4,vz*1.3);};
+document.getElementById('zo').onclick=()=>{vz=Math.max(0.2,vz*0.77);};
+document.getElementById('zr').onclick=()=>{vx=0;vy=0;vz=0.85;};
+
+// ── FILTERS ──────────────────────────────────────────────────────
+document.querySelectorAll('.fb').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    activeFilter=btn.dataset.t;
+    closePanel();
+  });
+});
+</script>
+</body>
+</html>
