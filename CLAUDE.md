@@ -25,6 +25,7 @@ Investiga mercados financieros y tecnologia. Gestiona trading con MT5/FTMO. Mane
 
 ## Skills disponibles
 
+### Nucleo (activos desde el inicio)
 | Skill | Carpeta | Cuando activar | Output |
 |-------|---------|----------------|--------|
 | Research | `skills/research/` | "investiga", "analiza [TICKER]", "brief de", "que sabes de" | `brain/knowledge/research/[TICKER]-[Tema]-[FECHA].md` |
@@ -32,6 +33,17 @@ Investiga mercados financieros y tecnologia. Gestiona trading con MT5/FTMO. Mane
 | Email | `skills/email/` | "correos", "triage", "responde a", "resume este correo" | `brain/knowledge/email/` |
 | Social | `skills/social/` | "genera post", "crea carrusel", "publica", "contenido para" | `brain/knowledge/social/posts/[FECHA]-[Tema]-[Formato].md` |
 | Daily | `skills/daily/` | "que hay para hoy", "cierra el dia", "brief del dia" | `brain/knowledge/daily/[FECHA].md` |
+
+### Expansion (Cortex v2)
+| Skill | Carpeta | Cuando activar | Output |
+|-------|---------|----------------|--------|
+| Finance | `skills/finance/` | "patrimonio", "suscripciones", "cashflow", "impuestos", "seguros", "CFO" | `brain/knowledge/finance/` |
+| Health | `skills/health/` | "sintomas", "medico", "medicamento", "ejercicio", "sueno", "nutricion" | `brain/knowledge/health/` |
+| Relationships | `skills/relationships/` | "hablar con", "reunion con", "CRM", "red de contactos", "familia" | `brain/knowledge/relationships/` |
+| Learning | `skills/learning/` | "quiero aprender", "explicame", "mapa de conocimiento", "insight", "repaso" | `brain/knowledge/learning/` |
+| Legal | `skills/legal/` | "contrato", "clausula", "deadline legal", "IP", "compliance", "marca" | `brain/knowledge/legal/` |
+| Creative | `skills/creative/` | "libro", "podcast", "newsletter", "articulo", "idea creativa", "guion" | `brain/knowledge/creative/` |
+| Business | `skills/business/` | "cliente", "proyecto", "pipeline", "factura", "candidato", "proveedor" | `brain/knowledge/business/` |
 
 Cuando una frase no coincide con ningun trigger, respondo como asistente general (preguntas casuales, explicaciones, ayuda con codigo, etc).
 
