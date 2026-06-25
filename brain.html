@@ -138,7 +138,7 @@ const SL = {active:'Activo',empty:'Vacío',encrypted:'Encriptado 🔒',partial:'
 const NODES = [
   {id:'jarvis',label:'JARVIS',type:'core',r:42,status:'active',fixed:true,
    desc:'Sistema central del Agentic OS personal de Jorge. Asistente AI con personalidad híbrida: formal en reportes ("Score 7.3. Decisión: Watch."), casual en chat. Memoria persistente en múltiples capas, 5 skills, voz via Ollama + Web Speech API.',
-   files:['CLAUDE.md — Cerebro central (124 líneas)','jarvis.html — Interfaz voz/chat (1,126 líneas)','brain/ — Memoria persistente','skills/ — 5 módulos especializados','vault/ — Conocimiento acumulado'],lines:'~5,927 líneas · 91 archivos totales'},
+   files:['CLAUDE.md — Cerebro central (124 líneas)','jarvis.html — Interfaz voz/chat (1,126 líneas)','brain/ — Memoria persistente','skills/ — 5 módulos especializados','brain/knowledge/ — Conocimiento acumulado'],lines:'~5,927 líneas · 91 archivos totales'},
 
   {id:'claude-md',label:'CLAUDE.md',type:'core',r:24,status:'active',
    desc:'124 líneas. Instrucciones maestras: personalidad Jarvis, tabla de 5 skills con triggers de activación, scorecard de 8 métricas (Buy/Watch/Skip), reglas operación, convenciones vault, arquitectura cerebro, red de proyectos.',
@@ -169,7 +169,7 @@ const NODES = [
    files:['research/ — Investigación financiera','trading/ — Watchlist y alertas','email/ — Gestión de correos','social/ — Contenido redes (secundario)','daily/ — Brief y cierre diario'],lines:'~800 líneas · 28 archivos'},
 
   {id:'sk-res',label:'Research',type:'skills',r:22,status:'active',
-   desc:'Investiga acciones, noticias tech, cualquier tema. Genera briefs con scorecard 8 métricas: Truth, Confidence, Edge, Opportunity, Risk, Timing, Actionability, Asymmetry. Decisión: Buy (≥8.0) / Watch (6-7.9) / Skip (<6.0). Output en vault/research/.',
+   desc:'Investiga acciones, noticias tech, cualquier tema. Genera briefs con scorecard 8 métricas: Truth, Confidence, Edge, Opportunity, Risk, Timing, Actionability, Asymmetry. Decisión: Buy (≥8.0) / Watch (6-7.9) / Skip (<6.0). Output en brain/knowledge/research/.',
    files:['SKILL.md','brief-template.md','scorecard-template.md','stock-impact-template.md','lessons.md'],lines:'272 líneas'},
 
   {id:'sk-trd',label:'Trading',type:'skills',r:22,status:'active',
@@ -188,7 +188,7 @@ const NODES = [
    desc:'El único skill que lee de TODOS los demás. Brief matutino: compila watchlist + alertas + email pendientes + borradores + últimas 3 investigaciones. Cierre: resume actividades, actualiza métricas, lista pendientes.',
    files:['SKILL.md','morning-brief-template.md','end-of-day-template.md','lessons.md'],lines:'152 líneas'},
 
-  {id:'vault',label:'vault/',type:'vault',r:30,status:'partial',
+  {id:'vault',label:'knowledge/',type:'vault',r:30,status:'partial',
    desc:'Almacén de conocimiento persistente. Compatible con Obsidian: frontmatter YAML + wikilinks [[]]. 4 notas activas ahora, estructura completa creada esperando llenarse con el uso diario del sistema.',
    files:['_index.md — Mapa central','research/ — 2 notas activas','trading/ — watchlist + alertas','daily/ — 1 nota','email/ — .gitignored','social/ — vacío'],lines:'~350 líneas · 4 notas activas'},
 
@@ -233,8 +233,8 @@ const NODES = [
    files:['Proyecto separado','Pine Script estrategias','MT5 Expert Advisor','VPS NY activo'],lines:'Activo'},
 
   {id:'emailag',label:'Email Agent',type:'external',r:18,status:'planned',
-   desc:'Gestión de Gmail pendiente. Lee brain/sync/shared-context.md para contexto de Jorge. Se conecta con vault/email/. Esperando Google Takeout data para configurar correctamente.',
-   files:['brain/sync/shared-context.md (referencia)','vault/email/ (destino)'],lines:'Planificado'},
+   desc:'Gestión de Gmail pendiente. Lee brain/sync/shared-context.md para contexto de Jorge. Se conecta con brain/knowledge/email/. Esperando Google Takeout data para configurar correctamente.',
+   files:['brain/sync/shared-context.md (referencia)','brain/knowledge/email/ (destino)'],lines:'Planificado'},
 ];
 
 const LINKS = [

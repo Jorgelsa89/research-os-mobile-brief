@@ -29,28 +29,28 @@ Gestiono la watchlist de acciones, configuro alertas de precio, evaluo resultado
 
 ## Output esperado
 
-- Actualizaciones en `vault/trading/watchlist.md`
-- Alertas en `vault/trading/alertas.md`
-- Backtests en `vault/trading/backtests/[ESTRATEGIA]-[FECHA].md`
+- Actualizaciones en `brain/knowledge/trading/watchlist.md`
+- Alertas en `brain/knowledge/trading/alertas.md`
+- Backtests en `brain/knowledge/trading/backtests/[ESTRATEGIA]-[FECHA].md`
 
 ## Proceso
 
 ### Para watchlist:
-1. Leer `vault/trading/watchlist.md`
+1. Leer `brain/knowledge/trading/watchlist.md`
 2. Aplicar la operacion (agregar/quitar/actualizar)
-3. Si es una accion nueva, buscar si hay research en `vault/research/`
+3. Si es una accion nueva, buscar si hay research en `brain/knowledge/research/`
 4. Actualizar la fecha de ultima modificacion
 5. Mostrar watchlist actualizada
 
 ### Para alertas:
-1. Leer `vault/trading/alertas.md`
+1. Leer `brain/knowledge/trading/alertas.md`
 2. Agregar/modificar/eliminar alerta
 3. Confirmar la configuracion
 
 ### Para backtests:
 1. Recibir datos o descripcion de la estrategia
 2. Evaluar usando el template de backtest
-3. Guardar en `vault/trading/backtests/`
+3. Guardar en `brain/knowledge/trading/backtests/`
 
 ## Conexiones con otros skills
 

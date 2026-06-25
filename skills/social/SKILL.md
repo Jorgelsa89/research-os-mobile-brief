@@ -30,18 +30,18 @@ Genero contenido optimizado para Instagram y Facebook. Adapto formato (post, ree
 
 ## Output esperado
 
-Archivo en `vault/social/borradores/[YYYY-MM-DD]-[Tema]-[Formato].md` con:
+Archivo en `brain/knowledge/social/borradores/[YYYY-MM-DD]-[Tema]-[Formato].md` con:
 - Frontmatter YAML
 - Contenido para Instagram
 - Contenido para Facebook (adaptado)
 - Hashtags
 - CTA
 
-Cuando se confirma publicacion, mover a `vault/social/publicados/`.
+Cuando se confirma publicacion, mover a `brain/knowledge/social/publicados/`.
 
 ## Proceso
 
-1. Recibir idea o identificar tema de `vault/research/`
+1. Recibir idea o identificar tema de `brain/knowledge/research/`
 2. Determinar formato y objetivo
 3. Aplicar brand voice
 4. Usar template del formato correspondiente

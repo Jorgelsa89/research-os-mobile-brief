@@ -71,7 +71,7 @@ en las capas correspondientes del cerebro:
 - Preferencias → `brain/memory/preferences.md`
 - Patrones de trabajo → `brain/memory/patterns/`
 - Proyectos → `brain/sync/shared-context.md`
-- Conocimiento → `vault/research/` o `brain/memory/growth-log.md`
+- Conocimiento → `brain/knowledge/research/` o `brain/memory/growth-log.md`
 
 ### Para conversations.json (Opcion A):
 
@@ -104,8 +104,8 @@ Una vez procesados los datos, se distribuyen asi:
 | Prioridades | `brain/memory/priorities.md` |
 | Proyectos activos | `brain/sync/shared-context.md` |
 | Conocimiento acumulado | `brain/memory/growth-log.md` |
-| Investigaciones | `vault/research/` |
-| Metodologias (trading, etc.) | `vault/research/` como knowledge base |
+| Investigaciones | `brain/knowledge/research/` |
+| Metodologias (trading, etc.) | `brain/knowledge/research/` como knowledge base |
 
 ---
 

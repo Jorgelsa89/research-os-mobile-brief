@@ -1,6 +1,6 @@
 # Watchlist Template
 
-Estructura para mantener la watchlist en `vault/trading/watchlist.md`.
+Estructura para mantener la watchlist en `brain/knowledge/trading/watchlist.md`.
 
 ## Formato de entrada
 

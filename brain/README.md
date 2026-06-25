@@ -11,11 +11,11 @@ Corteza prefrontal                brain/memory/short-term/
   (memoria de trabajo)              → Contexto de la sesion activa
                                      Se limpia al cerrar
 
-Hipocampo                         vault/daily/ + vault/research/
+Hipocampo                         brain/knowledge/daily/ + brain/knowledge/research/
   (memoria episodica)               → Eventos, investigaciones
                                      Que paso y cuando
 
-Neocortex                         vault/ (todo el vault)
+Neocortex                         brain/knowledge/ (todo el vault)
   (memoria semantica)               → Hechos, conocimiento acumulado
                                      Lo que sabes
 

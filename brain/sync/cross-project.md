@@ -34,13 +34,13 @@ Cuando un proyecto necesita datos de otro, este archivo dice donde encontrarlos.
 
 | Desde | Hacia | Que comparten | Como |
 |-------|-------|--------------|------|
-| Research OS | Trading | Watchlist, scorecards | vault/trading/watchlist.md |
-| Research OS | Social | Briefs → posts | vault/research/ → vault/social/ |
-| Research OS | Robin Hood Agent | Watchlist, metodologia opciones | vault/trading/ + vault/research/ |
+| Research OS | Trading | Watchlist, scorecards | brain/knowledge/trading/watchlist.md |
+| Research OS | Social | Briefs → posts | brain/knowledge/research/ → brain/knowledge/social/ |
+| Research OS | Robin Hood Agent | Watchlist, metodologia opciones | brain/knowledge/trading/ + brain/knowledge/research/ |
 | Trading | Research OS | Senales → investigacion | Trigger manual |
 | Robin Hood Agent | Trading | Escaner opciones, signals | options_universe_50.json → alertas |
-| Robin Hood Agent | Research OS | Datos de opciones por activo | API Schwab → vault/research/ |
-| Email | Research OS | Temas mencionados | vault/email/ → skills/research/ |
+| Robin Hood Agent | Research OS | Datos de opciones por activo | API Schwab → brain/knowledge/research/ |
+| Email | Research OS | Temas mencionados | brain/knowledge/email/ → skills/research/ |
 | Brain | Todos | Identidad, preferencias | brain/sync/shared-context.md |
 
 ## Como agregar un proyecto nuevo
@@ -87,7 +87,7 @@ Cuando un proyecto necesita datos de otro, este archivo dice donde encontrarlos.
 ```
 Robin Hood Agent → escanea 50 activos diarios via API Schwab
     → filtra oportunidades con score 6+
-    → genera alertas → vault/trading/alertas.md
+    → genera alertas → brain/knowledge/trading/alertas.md
     → Research OS puede profundizar en cualquier alerta
 ```
 

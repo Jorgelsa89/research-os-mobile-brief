@@ -26,19 +26,19 @@ Genero el brief matutino consolidando informacion de todos los dominios (researc
 
 ## Output esperado
 
-Archivo en `vault/daily/[YYYY-MM-DD].md` con resumen del dia.
+Archivo en `brain/knowledge/daily/[YYYY-MM-DD].md` con resumen del dia.
 
 ## Proceso
 
 ### Brief matutino ("que hay para hoy"):
-1. Leer `vault/daily/` — buscar nota del dia anterior para contexto y pendientes
-2. Leer `vault/trading/watchlist.md` — acciones en seguimiento
-3. Leer `vault/trading/alertas.md` — alertas activas
-4. Leer `vault/email/pendientes.md` — correos sin responder
-5. Leer `vault/social/borradores/` — posts pendientes de publicar
-6. Leer `vault/research/` — investigaciones recientes (ultimos 3 dias)
+1. Leer `brain/knowledge/daily/` — buscar nota del dia anterior para contexto y pendientes
+2. Leer `brain/knowledge/trading/watchlist.md` — acciones en seguimiento
+3. Leer `brain/knowledge/trading/alertas.md` — alertas activas
+4. Leer `brain/knowledge/email/pendientes.md` — correos sin responder
+5. Leer `brain/knowledge/social/borradores/` — posts pendientes de publicar
+6. Leer `brain/knowledge/research/` — investigaciones recientes (ultimos 3 dias)
 7. Compilar brief usando template
-8. Guardar en `vault/daily/[FECHA].md`
+8. Guardar en `brain/knowledge/daily/[FECHA].md`
 9. Presentar resumen a Jorge
 
 ### Cierre del dia ("cierra el dia"):
@@ -46,7 +46,7 @@ Archivo en `vault/daily/[YYYY-MM-DD].md` con resumen del dia.
 2. Actualizar metricas del dia
 3. Listar pendientes para manana
 4. Guardar/actualizar nota diaria
-5. Actualizar `vault/_index.md`
+5. Actualizar `brain/knowledge/_index.md`
 
 ## Conexiones con otros skills
 

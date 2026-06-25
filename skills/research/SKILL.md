@@ -28,7 +28,7 @@ Investigo noticias, acciones, y temas tecnologicos. Genero briefs completos con 
 
 ## Output esperado
 
-Archivo en `vault/research/[TICKER]-[Tema]-[YYYY-MM-DD].md` con:
+Archivo en `brain/knowledge/research/[TICKER]-[Tema]-[YYYY-MM-DD].md` con:
 - Frontmatter YAML completo
 - Resultado principal con score y decision
 - Resumen de investigacion
@@ -41,7 +41,7 @@ Archivo en `vault/research/[TICKER]-[Tema]-[YYYY-MM-DD].md` con:
 ## Proceso
 
 1. Buscar informacion sobre el tema usando fuentes disponibles
-2. Verificar si ya existe una nota en `vault/research/` sobre el mismo tema
+2. Verificar si ya existe una nota en `brain/knowledge/research/` sobre el mismo tema
 3. Si existe, ofrecer actualizar en vez de crear nueva
 4. Evaluar cada una de las 8 metricas del scorecard (0-10)
 5. Calcular score compuesto (promedio)
@@ -49,7 +49,7 @@ Archivo en `vault/research/[TICKER]-[Tema]-[YYYY-MM-DD].md` con:
 7. Identificar acciones vinculadas con sentimiento e impacto
 8. Generar insights y senales a vigilar
 9. Guardar en vault con frontmatter y wikilinks
-10. Actualizar `vault/_index.md` con la nueva nota
+10. Actualizar `brain/knowledge/_index.md` con la nueva nota
 11. Ofrecer: "Quieres que actualice la watchlist?" o "Quieres un post sobre esto?"
 
 ## Conexiones con otros skills

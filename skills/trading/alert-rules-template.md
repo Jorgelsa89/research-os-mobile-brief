@@ -1,6 +1,6 @@
 # Alert Rules Template
 
-Formato para configurar alertas de precio en `vault/trading/alertas.md`.
+Formato para configurar alertas de precio en `brain/knowledge/trading/alertas.md`.
 
 ## Tipos de alerta
 
