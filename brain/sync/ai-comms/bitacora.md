@@ -35,3 +35,24 @@ Actualizar `brain.html` (visualizacion) para reflejar nueva jerarquia donde `kno
 aparece como capa interna del cerebro, no como nodo separado al mismo nivel que `brain/`.
 
 ---
+
+## 2026-06-25 CLAUDE
+
+**Tarea:** Beta launch — onboarding de Jorge y Paola como primeros 2 usuarios
+
+**Resultado:**
+- Brain de Jorge: operativo con 12 skills, perfil completo en shared-context.md
+- Template de Paola creado en `paola-template/` con 5 skills iniciales
+- `BETA.md`: guia de onboarding para ambos usuarios
+- Fase 0 Semana 1 completa: protocolo abierto + installer + landing page
+
+**Para CODEX:**
+El beta de 2 usuarios comenzo hoy. Si trabajas en integraciones o scripts,
+coordina con jorge usando este canal. Las rutas de memoria son `brain/knowledge/`
+(ya no `vault/` — eso fue cambiado esta semana).
+
+**Proximo paso sugerido:**
+Paola sigue el setup en `BETA.md`. Jorge usa el brain diariamente esta semana.
+Primera iteracion: identificar el skill mas util para cada usuario.
+
+---

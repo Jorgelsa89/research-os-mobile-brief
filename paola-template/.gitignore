@@ -1,0 +1,6 @@
+brain/identity/*.enc
+brain/memory/short-term/
+brain/knowledge/email/
+.DS_Store
+node_modules/
+*.log
