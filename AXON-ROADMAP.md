@@ -1,11 +1,11 @@
 ---
-title: "Cortex Personal AI OS — Technical & Business Roadmap"
+title: "Axon Personal AI OS — Technical & Business Roadmap"
 date: 2026-06-25
 version: 1.0
 status: activo
 ---
 
-# CORTEX — Roadmap Tecnico y de Negocio
+# AXON — Roadmap Tecnico y de Negocio
 
 ## Estado Actual (Baseline)
 
@@ -27,7 +27,7 @@ Lo que falta para ser un producto:
   ❌ Sync entre dispositivos
   ❌ Skills marketplace
   ❌ Integraciones reales (APIs de mercado, email, calendario)
-  ❌ Cortex funcionando de forma autonoma (sin que el usuario lo active)
+  ❌ Axon funcionando de forma autonoma (sin que el usuario lo active)
 ```
 
 ---
@@ -39,11 +39,11 @@ Lo que falta para ser un producto:
 ### Semana 1: Limpieza y documentacion
 - [ ] Documentar el protocolo brain/ como spec publica (`BRAIN-PROTOCOL.md`)
 - [ ] Escribir `CONTRIBUTING.md` para developers de skills
-- [ ] Crear demo video de 90 segundos (Cortex generando un brief de NVDA)
+- [ ] Crear demo video de 90 segundos (Axon generando un brief de NVDA)
 - [ ] Landing page minimal en GitHub Pages
 
 ### Semana 2: Installer
-- [ ] `cortex-init.sh` — script que clona el template y configura el cerebro inicial
+- [ ] `axon-init.sh` — script que clona el template y configura el cerebro inicial
 - [ ] Wizard de onboarding en CLI: "Quien eres? Que dominios quieres activar?"
 - [ ] Template de brain/ para nuevos usuarios (sin datos de Jorge)
 
@@ -57,7 +57,7 @@ Lo que falta para ser un producto:
 - [ ] Implementar logging anonimizado opt-in
 - [ ] Preparar informe de fase 0
 
-**Exit criteria:** 5 personas pueden instalar y usar Cortex sin ayuda de Jorge.
+**Exit criteria:** 5 personas pueden instalar y usar Axon sin ayuda de Jorge.
 
 ---
 
@@ -106,7 +106,7 @@ skills/learning/
 Un solo-page dashboard en `dashboard.html`:
 ```
 ┌─────────────────────────────────────────────────────┐
-│  CORTEX · [nombre del usuario]                      │
+│  AXON · [nombre del usuario]                      │
 │                                                     │
 │  🧠 Brain Health                                    │
 │  847 knowledge nodes · 23 skills · ✅ encrypted     │
@@ -116,7 +116,7 @@ Un solo-page dashboard en `dashboard.html`:
 │  Finance · Health    │  2 alertas pendientes        │
 │  Email · Social      │  NVDA: $127.40 (+2.1%)       │
 │                                                     │
-│  🔔 Cortex Says:                                    │
+│  🔔 Axon Says:                                    │
 │  "MSFT reporta earnings manana. Quieres brief?"     │
 └─────────────────────────────────────────────────────┘
 ```
@@ -134,72 +134,72 @@ Un solo-page dashboard en `dashboard.html`:
 
 ## FASE 2 — Plataforma (Meses 3-9) · Integraciones reales
 
-**Objetivo:** Cortex se conecta con el mundo exterior automaticamente.
+**Objetivo:** Axon se conecta con el mundo exterior automaticamente.
 
 ### Los conectores que cambian todo
 
 #### Conector 1: Market Data (Mes 4)
 ```javascript
-// Cortex Live — actualiza brain/knowledge/trading/watchlist.md en tiempo real
-cortex.connect('polygon.io', {
+// Axon Live — actualiza brain/knowledge/trading/watchlist.md en tiempo real
+axon.connect('polygon.io', {
   tickers: brain.knowledge.trading.watchlist,
   alerts: brain.knowledge.trading.alertas,
-  onAlert: (alert) => cortex.notify(alert) + cortex.prepareResearch(alert.ticker)
+  onAlert: (alert) => axon.notify(alert) + axon.prepareResearch(alert.ticker)
 })
 ```
 
-**Que hace:** Watchlist se actualiza sola. Cortex te avisa cuando algo cruza tu precio objetivo y ofrece generar el brief automaticamente.
+**Que hace:** Watchlist se actualiza sola. Axon te avisa cuando algo cruza tu precio objetivo y ofrece generar el brief automaticamente.
 
 #### Conector 2: Email (Mes 4-5)
 ```javascript
-cortex.connect('gmail', {
+axon.connect('gmail', {
   rules: skills.email.triageRules,
-  onNewEmail: (email) => cortex.triage(email) + cortex.draftResponse(email),
+  onNewEmail: (email) => axon.triage(email) + axon.draftResponse(email),
   dailySummary: '07:00'
 })
 ```
 
-**Que hace:** Triage automatico cada manana. Cortex lee, clasifica, sugiere respuestas. Tu solo apruebas.
+**Que hace:** Triage automatico cada manana. Axon lee, clasifica, sugiere respuestas. Tu solo apruebas.
 
 #### Conector 3: Calendar (Mes 5)
 ```javascript
-cortex.connect('google-calendar', {
-  onMeeting: (meeting) => cortex.prepareMeetingBrief(meeting, {
+axon.connect('google-calendar', {
+  onMeeting: (meeting) => axon.prepareMeetingBrief(meeting, {
     attendees: brain.knowledge.relationships,
     context: brain.knowledge.projects
   })
 })
 ```
 
-**Que hace:** 30 minutos antes de cada reunion, Cortex prepara un brief: quien es cada persona, historial de conversaciones, lo que prometiste, lo que quieres lograr.
+**Que hace:** 30 minutos antes de cada reunion, Axon prepara un brief: quien es cada persona, historial de conversaciones, lo que prometiste, lo que quieres lograr.
 
 #### Conector 4: Broker API (Mes 6-7)
 ```javascript
-cortex.connect('schwab', {
+axon.connect('schwab', {
   mode: 'read-only',
-  onSync: (portfolio) => cortex.updateKnowledge('trading/portfolio', portfolio),
+  onSync: (portfolio) => axon.updateKnowledge('trading/portfolio', portfolio),
   alerts: brain.knowledge.trading.alertas
 })
 ```
 
-**Que hace:** Portfolio real en brain/knowledge/trading/. Cortex puede hacer analisis real porque tiene los numeros reales.
+**Que hace:** Portfolio real en brain/knowledge/trading/. Axon puede hacer analisis real porque tiene los numeros reales.
 
 #### Conector 5: News & Research (Mes 7-8)
 ```javascript
-cortex.connect('newsapi', {
+axon.connect('newsapi', {
   filters: brain.identity.interests + brain.knowledge.trading.watchlist,
-  onRelevantNews: (news) => cortex.briefIfSignificant(news)
+  onRelevantNews: (news) => axon.briefIfSignificant(news)
 })
 ```
 
-**Que hace:** Cortex lee las noticias pero solo te interrumpe si algo es realmente relevante para TI especificamente.
+**Que hace:** Axon lee las noticias pero solo te interrumpe si algo es realmente relevante para TI especificamente.
 
-### La Feature Killer de Esta Fase: Cortex Overnight
+### La Feature Killer de Esta Fase: Axon Overnight
 
 ```
 22:00 Jorge duerme.
 
-22:01 Cortex empieza a trabajar:
+22:01 Axon empieza a trabajar:
   → Lee noticias financieras
   → Actualiza watchlist con precios de cierre
   → Revisa inbox de email
@@ -209,7 +209,7 @@ cortex.connect('newsapi', {
 
 07:00 Jorge se despierta.
 
-07:01 Notificacion de Cortex:
+07:01 Notificacion de Axon:
   "Buenos dias. Aqui el brief:
    • NVDA subio 8.2% after-hours (earnings). Brief listo.
    • 3 correos urgentes. Respuestas sugeridas preparadas.
@@ -223,9 +223,9 @@ cortex.connect('newsapi', {
 
 ## FASE 3 — Escala (Meses 9-18) · Verticales enterprise
 
-**Objetivo:** Cortex se convierte en infraestructura para knowledge workers profesionales.
+**Objetivo:** Axon se convierte en infraestructura para knowledge workers profesionales.
 
-### Vertical 1: Cortex Research (Inversores)
+### Vertical 1: Axon Research (Inversores)
 **Precio:** $99/mes Pro · $499/mes Team
 **Features exclusivas:**
 - Scorecard de 8 metricas como estandar de la industria
@@ -236,7 +236,7 @@ cortex.connect('newsapi', {
 
 **Canal de adquisicion:** FinTwit, Seeking Alpha, comunidades de Discord de trading
 
-### Vertical 2: Cortex Operations (Solopreneurs & Equipos)
+### Vertical 2: Axon Operations (Solopreneurs & Equipos)
 **Precio:** $49/mes Pro · $25/user/mes Team (min 5)
 **Features exclusivas:**
 - Client intelligence (contexto completo antes de cada interaccion)
@@ -246,7 +246,7 @@ cortex.connect('newsapi', {
 
 **Canal de adquisicion:** Product Hunt, Indie Hackers, Twitter/X creadores
 
-### Vertical 3: Cortex Enterprise
+### Vertical 3: Axon Enterprise
 **Precio:** $500-5,000/mes por equipo
 **Features exclusivas:**
 - On-premise deployment
@@ -265,10 +265,10 @@ cortex.connect('newsapi', {
 ### Skills Marketplace
 Cualquier developer puede crear y publicar skills:
 ```
-cortex publish skill ./skills/myskill
-# → Publicado en marketplace.cortex.ai
+axon publish skill ./skills/myskill
+# → Publicado en marketplace.axon.ai
 # → 70% revenue para el developer
-# → Instalable en cualquier brain Cortex
+# → Instalable en cualquier brain Axon
 ```
 
 **Ejemplos de skills de terceros:**
@@ -278,11 +278,11 @@ cortex publish skill ./skills/myskill
 - Skill de Clio (gestion de casos para abogados)
 - Skill de HubSpot (CRM para equipos de ventas)
 
-### Cortex Intelligence Layer
+### Axon Intelligence Layer
 **Opt-in, anonimizado, poderoso:**
 ```
-1,000 inversores en Cortex investigan NVDA esta semana
-→ Cortex detecta el patron (sin ver datos individuales)
+1,000 inversores en Axon investigan NVDA esta semana
+→ Axon detecta el patron (sin ver datos individuales)
 → Alerta anonimizada: "Alta actividad de research en NVDA esta semana"
 → Eso es una senal que Bloomberg no tiene
 ```
@@ -298,7 +298,7 @@ Tu brain de 2 anos entrena un modelo personal:
 
 Esto NO sube tus datos. El fine-tuning ocurre localmente o en un enclave seguro. El modelo resultante es tuyo.
 
-### Cortex Legacy
+### Axon Legacy
 ```
 Configuracion de legado digital:
   → Si no accedes en 180 dias, ejecutar protocolo de legado

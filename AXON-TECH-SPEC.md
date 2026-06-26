@@ -1,15 +1,15 @@
 ---
-title: "Cortex — Technical Specification & Data Architecture"
+title: "Axon — Technical Specification & Data Architecture"
 date: 2026-06-25
 version: 1.0
 status: activo
 ---
 
-# Cortex — Especificacion Tecnica
+# Axon — Especificacion Tecnica
 
 ## Arquitectura de Datos: La Regla Zero-Compromise
 
-La tension central de Cortex: **privacidad radical vs. integraciones en tiempo real.**
+La tension central de Axon: **privacidad radical vs. integraciones en tiempo real.**
 
 La resolucion: **datos de primera clase nunca salen del dispositivo. Los conectores son puentes, no silos.**
 
@@ -22,7 +22,7 @@ La resolucion: **datos de primera clase nunca salen del dispositivo. Los conecto
                              │ OAuth tokens
                              │ (solo en device)
                     ┌────────▼────────┐
-                    │  CORTEX BRIDGE  │ ← Corre en tu dispositivo
+                    │  AXON BRIDGE  │ ← Corre en tu dispositivo
                     │  (Node.js local)│   NUNCA en nuestros servers
                     │                 │
                     │  Lee API → procesa
@@ -50,12 +50,12 @@ La resolucion: **datos de primera clase nunca salen del dispositivo. Los conecto
 
 ---
 
-## Como Funciona "Cortex Overnight"
+## Como Funciona "Axon Overnight"
 
-"Cortex trabaja mientras duermes" no es magia — es un scheduler local:
+"Axon trabaja mientras duermes" no es magia — es un scheduler local:
 
 ```javascript
-// cortex-scheduler.js — corre como proceso de background
+// axon-scheduler.js — corre como proceso de background
 // Activado al iniciar el OS del usuario, como cualquier app de menubar
 
 const schedule = {
@@ -75,11 +75,11 @@ const schedule = {
 - Mac M1/M2/M3: Ollama corre sin GPU, 3-8 tokens/segundo, suficiente
 - Windows con RTX: Excelente, rapido
 - Windows sin GPU: Ollama funciona en CPU, lento pero funcional
-- Mobile (iOS/Android): Cortex Overnight no disponible, brief se genera en la manana al abrir la app
+- Mobile (iOS/Android): Axon Overnight no disponible, brief se genera en la manana al abrir la app
 
 **Lo que pasa mientras duermes:**
 ```
-22:00 Cortex inicia ciclo nocturno
+22:00 Axon inicia ciclo nocturno
   → Llama a NewsAPI con filtros de brain/knowledge/trading/watchlist.md
   → Procesa con Ollama local (sin costo de API)
   → Guarda solo lo relevante en brain/knowledge/daily/[FECHA].md
@@ -100,7 +100,7 @@ Sin una sola linea de tus datos en nuestros servidores.
 
 **Decision:** Pricing por capacidad del brain, no por vertical.
 
-Las versiones de verticales (Cortex Research, Cortex Operations) son **marketing frames** del mismo producto — no versiones separadas. Simplifican la comunicacion, no la arquitectura.
+Las versiones de verticales (Axon Research, Axon Operations) son **marketing frames** del mismo producto — no versiones separadas. Simplifican la comunicacion, no la arquitectura.
 
 | Plan | Precio | Brain | Skills | Sync | AI Models | Support |
 |------|--------|-------|--------|------|-----------|---------|
@@ -111,7 +111,7 @@ Las versiones de verticales (Cortex Research, Cortex Operations) son **marketing
 
 **Por que $29 y no $49 o $99:**
 - Benchmark vs. competencia: Notion AI ($10), Mem.ai ($14.99), Obsidian Sync ($10)
-- Cortex es 3-5x el valor (multi-AI, mas skills, encriptacion, mas integraciones)
+- Axon es 3-5x el valor (multi-AI, mas skills, encriptacion, mas integraciones)
 - Pero el usuario necesita convencerse antes de pagar 3x — $29 reduce friccion de prueba
 - Increase a $49 en Fase 2 cuando los conectores esten activos
 
@@ -122,7 +122,7 @@ Las versiones de verticales (Cortex Research, Cortex Operations) son **marketing
 Cada conector sigue el mismo patron:
 
 ```javascript
-class CortexConnector {
+class AxonConnector {
   constructor(service, oauthConfig) {
     // Token nunca sale del dispositivo
     this.token = localKeychain.get(service)
@@ -148,15 +148,15 @@ class CortexConnector {
 - Cada conector requiere aprobacion explicita ("Conectar Gmail")
 - Se muestra exactamente que permisos se solicitan y por que
 - Se puede desconectar con un click (revoca tokens, borra datos cacheados)
-- Modo "read-only" por defecto (Cortex nunca envia emails por su cuenta)
-- Modo "draft" (Cortex propone, tu apruebas)
+- Modo "read-only" por defecto (Axon nunca envia emails por su cuenta)
+- Modo "draft" (Axon propone, tu apruebas)
 - Modo "auto" (solo disponible para acciones de bajo riesgo, con audit trail)
 
 ---
 
 ## Competitive Landscape
 
-| Herramienta | Que hace bien | Por que Cortex gana |
+| Herramienta | Que hace bien | Por que Axon gana |
 |-------------|--------------|-------------------|
 | **Notion AI** | Edicion de documentos, bases de datos | Sin memoria persistente de identidad, no multi-AI, no encriptado |
 | **Mem.ai** | Memoria automatica de conversaciones | Sin skills especializados, sin identidad encriptada, un solo modelo |
@@ -188,7 +188,7 @@ Eso es lock-in positivo: no porque no puedas salir, sino porque no quieres.
 **La solucion:** Tres capas de proteccion.
 
 **Capa 1: Framing correcto**
-Cortex no es un medico, abogado, o asesor financiero. Es un sistema de organizacion de informacion personal. Cada output de skill sensible incluye disclaimer visible.
+Axon no es un medico, abogado, o asesor financiero. Es un sistema de organizacion de informacion personal. Cada output de skill sensible incluye disclaimer visible.
 
 **Capa 2: Lenguaje de output**
 - Health: "Registrado: dolor de cabeza 7/10 por 2 horas. Patron detectado: 3 veces en 2 semanas. Considera mencionarlo en tu proxima consulta." — No diagnostica.
@@ -197,7 +197,7 @@ Cortex no es un medico, abogado, o asesor financiero. Es un sistema de organizac
 
 **Capa 3: Terms of Service**
 - Uso informativo, no sustituto de profesionales
-- Cortex no almacena datos de salud en servidores (HIPAA compliance no aplica porque no hay datos en servidor)
+- Axon no almacena datos de salud en servidores (HIPAA compliance no aplica porque no hay datos en servidor)
 - Skills de terceros en marketplace requieren certification de que siguen el mismo framework
 
 ---
@@ -210,15 +210,15 @@ Cortex no es un medico, abogado, o asesor financiero. Es un sistema de organizac
 Mecanica real (sin differential privacy formal en MVP):
 
 1. Usuario A investiga NVDA (opt-in activado)
-   → Cortex registra LOCALMENTE: {ticker: "NVDA", timestamp: "2026-06-25", skill: "research"}
+   → Axon registra LOCALMENTE: {ticker: "NVDA", timestamp: "2026-06-25", skill: "research"}
 
-2. Cada semana, Cortex envia al servidor (solo si opt-in):
+2. Cada semana, Axon envia al servidor (solo si opt-in):
    → {tickers_investigated: ["NVDA", "MSFT", "AMD"], count: 5, week: "2026-W26"}
    → SIN contenido de notas. SIN scores. SIN razonamiento.
 
 3. Servidor agrega de todos los usuarios opt-in:
    → "Esta semana, 847 usuarios investigaron NVDA"
-   → Signal publicada como "Cortex Research Pulse" (feature Pro)
+   → Signal publicada como "Axon Research Pulse" (feature Pro)
 
 4. Protecciones:
    → Minimo 100 usuarios para publicar un signal (evita re-identificacion)

@@ -1,4 +1,4 @@
-# CORTEX — Personal AI OS
+# AXON — Personal AI OS
 ## Visión de Producto · Versión 1.0 · 2026-06-25
 
 ---
@@ -18,13 +18,13 @@ Un knowledge worker moderno maneja:
 - Informacion que se conecta de formas no obvias
 - Contexto fragmentado en 10 conversaciones, 5 plataformas, 3 dispositivos
 
-**Cortex no solo arregla el problema de amnesia de la IA. Arregla el problema de infraestructura cognitiva.**
+**Axon no solo arregla el problema de amnesia de la IA. Arregla el problema de infraestructura cognitiva.**
 
 ---
 
 ## La Tesis Central
 
-> Cortex es el sistema operativo de tu inteligencia.
+> Axon es el sistema operativo de tu inteligencia.
 > No importa que IA uses manana — tu cerebro ya estara ahi.
 
 Un cerebro digital persistente, encriptado, portable, que:
@@ -37,41 +37,41 @@ Un cerebro digital persistente, encriptado, portable, que:
 
 ---
 
-## Los 10 Problemas Que Cortex Resuelve (Que Nadie Ha Preguntado)
+## Los 10 Problemas Que Axon Resuelve (Que Nadie Ha Preguntado)
 
 ### 1. El Problema de Deuda de Decisiones
-Cada decision que pospones crea deuda cognitiva. La mayoria de personas no sabe cuanta deuda de decision estan cargando. Cortex mapea tus decisiones abiertas, cuantifica el costo de no decidir, y genera el research necesario para cerrar cada una.
+Cada decision que pospones crea deuda cognitiva. La mayoria de personas no sabe cuanta deuda de decision estan cargando. Axon mapea tus decisiones abiertas, cuantifica el costo de no decidir, y genera el research necesario para cerrar cada una.
 
 ### 2. El Problema de Colapso de Contexto
-Cuando cambias de contexto (de trabajo a trading a familia a salud), pierdes momentum cognitivo. Cortex mantiene todos tus contextos simultaneamente y te da un "brief de reentrada" cada vez que cambias.
+Cuando cambias de contexto (de trabajo a trading a familia a salud), pierdes momentum cognitivo. Axon mantiene todos tus contextos simultaneamente y te da un "brief de reentrada" cada vez que cambias.
 
 ### 3. El Problema de Decaimiento de Expertise
-Aprendes algo. En tres meses olvidaste el 80% (curva de Ebbinghaus). Cortex implementa repeticion espaciada en tu propio conocimiento — no flashcards, sino superficiar insights pasados en el momento exacto en que son relevantes.
+Aprendes algo. En tres meses olvidaste el 80% (curva de Ebbinghaus). Axon implementa repeticion espaciada en tu propio conocimiento — no flashcards, sino superficiar insights pasados en el momento exacto en que son relevantes.
 
 ### 4. El Problema de Entropia de Relaciones
-Amistades, relaciones de clientes, partnerships — decaen sin mantenimiento. Nadie tiene un sistema para esto. Cortex es tu relationship OS: recuerda lo que importa a cada persona, cuando hablaste por ultima vez, que prometiste.
+Amistades, relaciones de clientes, partnerships — decaen sin mantenimiento. Nadie tiene un sistema para esto. Axon es tu relationship OS: recuerda lo que importa a cada persona, cuando hablaste por ultima vez, que prometiste.
 
 ### 5. El Problema de Ceguera Financiera
-La mayoria de personas no sabe su fotografia financiera real en ningun momento. No solo su saldo — su trayectoria de patrimonio neto, subscripciones invisibles, deriva de asignacion de inversiones, exposicion fiscal. Cortex puede ser tu CFO personal.
+La mayoria de personas no sabe su fotografia financiera real en ningun momento. No solo su saldo — su trayectoria de patrimonio neto, subscripciones invisibles, deriva de asignacion de inversiones, exposicion fiscal. Axon puede ser tu CFO personal.
 
 ### 6. El Problema de Deteccion de Manipulacion
-Te estan nudgeando cada dia — anuncios, malos actores, gente bien intencionada con incentivos desalineados. Cortex puede flagear cuando te estan manipulando, cuando tomas decisiones bajo distres emocional, cuando un "trato" no cuadra matematicamente.
+Te estan nudgeando cada dia — anuncios, malos actores, gente bien intencionada con incentivos desalineados. Axon puede flagear cuando te estan manipulando, cuando tomas decisiones bajo distres emocional, cuando un "trato" no cuadra matematicamente.
 
 ### 7. El Problema de Silos de Conocimiento
-Tienes insights en 10 lugares diferentes — notas de voz, WhatsApp, correo, Notion, tu cabeza. Cortex es el lugar unico donde todo se conecta, se vuelve buscable y accionable.
+Tienes insights en 10 lugares diferentes — notas de voz, WhatsApp, correo, Notion, tu cabeza. Axon es el lugar unico donde todo se conecta, se vuelve buscable y accionable.
 
 ### 8. El Problema del "Yo Futuro"
-Que decidira la mejor version de ti? Que te diria tu yo pasado que hicieras diferente? Cortex puede simular tus propios patrones de razonamiento y alertarte cuando estas a punto de repetir un error historico.
+Que decidira la mejor version de ti? Que te diria tu yo pasado que hicieras diferente? Axon puede simular tus propios patrones de razonamiento y alertarte cuando estas a punto de repetir un error historico.
 
 ### 9. El Problema de Deuda de Atencion
-No solo te quedas sin tiempo — te quedas sin atencion. Cortex puede gestionar no solo tus tareas sino tu carga cognitiva, protegiendo tu tiempo de trabajo profundo y batching las interrupciones.
+No solo te quedas sin tiempo — te quedas sin atencion. Axon puede gestionar no solo tus tareas sino tu carga cognitiva, protegiendo tu tiempo de trabajo profundo y batching las interrupciones.
 
 ### 10. El Problema del Legado
-Que pasa con tu conocimiento cuando mueres, te retiras, o cambias de carrera? La mayoria de profesionales tiene decadas de insight acumulado que se evapora. Cortex puede ser una memoria profesional viva.
+Que pasa con tu conocimiento cuando mueres, te retiras, o cambias de carrera? La mayoria de profesionales tiene decadas de insight acumulado que se evapora. Axon puede ser una memoria profesional viva.
 
 ---
 
-## Los 50 Skills de Cortex
+## Los 50 Skills de Axon
 
 ### DOMINIO: MERCADOS & FINANZAS PERSONALES
 
@@ -172,26 +172,26 @@ Que pasa con tu conocimiento cuando mueres, te retiras, o cambias de carrera? La
 
 ## Las 7 Preguntas Que No Se Han Hecho
 
-### Q1: Que pasa cuando Cortex te conoce mejor de lo que te conoces?
-Despues de 2 anos de uso, Cortex logueo cada decision que tomaste, cada patron en tu trabajo, cada vez que te desviaste de tus valores declarados. Esto crea un "espejo conductual" — un sistema que puede decirte cosas sobre ti mismo que no sabias conscientemente. El diseno etico de esto es el desafio mas importante del producto.
+### Q1: Que pasa cuando Axon te conoce mejor de lo que te conoces?
+Despues de 2 anos de uso, Axon logueo cada decision que tomaste, cada patron en tu trabajo, cada vez que te desviaste de tus valores declarados. Esto crea un "espejo conductual" — un sistema que puede decirte cosas sobre ti mismo que no sabias conscientemente. El diseno etico de esto es el desafio mas importante del producto.
 
-### Q2: Que pasa si Cortex puede ser tu "segundo yo" en interacciones de bajo riesgo?
-Correos que necesitan respuesta pero no tu atencion completa. Scheduling. Follow-ups rutinarios. Cortex sabe como escribes, que te importa, tu tono para diferentes relaciones. Con tu permiso, maneja el 60% de tu comunicacion. Tu revisas y apruebas. Esto no es automatizacion — es delegacion a una IA que realmente te conoce.
+### Q2: Que pasa si Axon puede ser tu "segundo yo" en interacciones de bajo riesgo?
+Correos que necesitan respuesta pero no tu atencion completa. Scheduling. Follow-ups rutinarios. Axon sabe como escribes, que te importa, tu tono para diferentes relaciones. Con tu permiso, maneja el 60% de tu comunicacion. Tu revisas y apruebas. Esto no es automatizacion — es delegacion a una IA que realmente te conoce.
 
 ### Q3: Que pasa si el formato brain/ se convierte en un estandar abierto?
-Si Cortex publica un protocolo abierto para representacion de conocimiento personal, cada herramienta de IA puede importar tu brain. Tu cerebro Cortex se vuelve portable — lo llevas a Claude, a GPT-5, a lo que venga despues. Esta es la estrategia que gana a largo plazo: ser el estandar, no el silo.
+Si Axon publica un protocolo abierto para representacion de conocimiento personal, cada herramienta de IA puede importar tu brain. Tu cerebro Axon se vuelve portable — lo llevas a Claude, a GPT-5, a lo que venga despues. Esta es la estrategia que gana a largo plazo: ser el estandar, no el silo.
 
-### Q4: Que pasa si Cortex trabaja cuando no estas?
+### Q4: Que pasa si Axon trabaja cuando no estas?
 Mientras duermes: lee las noticias y flagea lo que importa, monitorea tu watchlist y alerta sobre movimientos relevantes, revisa tu email y triage, prepara tu brief matutino. Te despiertas y tu IA estuvo trabajando 8 horas. Esto no es un feature — es un cambio de categoria de producto.
 
-### Q5: Que pasa con tu Cortex cuando mueres?
-Tu conocimiento, tus patrones, tu sabiduria — todo esta ahi. Esto abre una pregunta profunda sobre legado digital. Podria un hijo heredar el Cortex de un padre? Podria una empresa preservar el conocimiento institucional de un fundador que se retira? Esto es un feature y una frontera etica simultaneamente.
+### Q5: Que pasa con tu Axon cuando mueres?
+Tu conocimiento, tus patrones, tu sabiduria — todo esta ahi. Esto abre una pregunta profunda sobre legado digital. Podria un hijo heredar el Axon de un padre? Podria una empresa preservar el conocimiento institucional de un fundador que se retira? Esto es un feature y una frontera etica simultaneamente.
 
 ### Q6: Cual es el juego de inteligencia colectiva?
-Si 1,000 inversores usan Cortex para research, y cada hallazgo es privado — estan dejando valor enorme sobre la mesa. Que pasa si Cortex puede agregar insights (sin compartir datos privados) para identificar cuando muchos usuarios investigan lo mismo? Esa es una senal que ningun inversor individual tiene. Opt-in, anonimizado, poderoso.
+Si 1,000 inversores usan Axon para research, y cada hallazgo es privado — estan dejando valor enorme sobre la mesa. Que pasa si Axon puede agregar insights (sin compartir datos privados) para identificar cuando muchos usuarios investigan lo mismo? Esa es una senal que ningun inversor individual tiene. Opt-in, anonimizado, poderoso.
 
-### Q7: Puede Cortex detectar cuando te estan manipulando?
-Recibes un correo de alguien que quiere algo. Cortex conoce tu historial de relacion con ellos, tus acuerdos pasados, el contexto del pedido. Puede flagear: "Este patron de solicitud se parece a 3 situaciones pasadas donde dijiste si y te arrepentiste." Eso no es solo asistencia de IA — es lealtad de IA.
+### Q7: Puede Axon detectar cuando te estan manipulando?
+Recibes un correo de alguien que quiere algo. Axon conoce tu historial de relacion con ellos, tus acuerdos pasados, el contexto del pedido. Puede flagear: "Este patron de solicitud se parece a 3 situaciones pasadas donde dijiste si y te arrepentiste." Eso no es solo asistencia de IA — es lealtad de IA.
 
 ---
 
@@ -219,7 +219,7 @@ CAPA 3: INTELLIGENCE LAYER (opt-in, futuro)
 CAPA 4: ACTION LAYER (futuro)
   ├── Agentes autonomos con tu aprobacion
   ├── Integraciones con APIs reales (banking, health, legal)
-  ├── Cortex actua, no solo aconseja
+  ├── Axon actua, no solo aconseja
   └── Audit trail completo de cada accion
 ```
 
@@ -252,14 +252,14 @@ CAPA 4: ACTION LAYER (futuro)
 - SLA garantizado
 
 ### Marketplace (revenue sharing)
-- Developers publican skills: 70% para el developer, 30% para Cortex
+- Developers publican skills: 70% para el developer, 30% para Axon
 - Skills de nicho (medicina, ley, trading especifico)
 - Suscripciones a data feeds premium
 
 ### Intelligence Layer (futuro)
 - Insights de mercado anonimizados para instituciones
 - API de fine-tuning personalizado por empresa
-- Cortex-as-infrastructure para otras apps
+- Axon-as-infrastructure para otras apps
 
 ---
 
@@ -268,7 +268,7 @@ CAPA 4: ACTION LAYER (futuro)
 ### Vertical 1: Inversores Retail Sofisticados (primeros 6 meses)
 - **Por que:** Ya usan 5+ herramientas, pagan por edge, el scorecard resuelve exactamente su problema
 - **Canal:** FinTwit, comunidades Reddit (r/investing, r/SecurityAnalysis), Discord de trading
-- **El gancho:** Demo de 90 segundos — Cortex genera brief de NVDA con score 7.3 y la decision fue correcta
+- **El gancho:** Demo de 90 segundos — Axon genera brief de NVDA con score 7.3 y la decision fue correcta
 - **Meta:** 500 usuarios Pro a $29/mes = $14,500 MRR
 
 ### Vertical 2: Solopreneurs & Creadores (meses 3-9)
@@ -288,16 +288,16 @@ CAPA 4: ACTION LAYER (futuro)
 ## El Moat Real
 
 ### Moat 1: Network effect del brain personal
-Despues de 6 meses, tu Cortex sabe cosas sobre ti que ninguna otra herramienta sabe. El switching cost es altisimo — no porque bloqueemos los datos (son tus archivos markdown), sino porque el SISTEMA de conexiones es irreproducible. Es como perder 500 horas de trabajo.
+Despues de 6 meses, tu Axon sabe cosas sobre ti que ninguna otra herramienta sabe. El switching cost es altisimo — no porque bloqueemos los datos (son tus archivos markdown), sino porque el SISTEMA de conexiones es irreproducible. Es como perder 500 horas de trabajo.
 
 ### Moat 2: El protocolo abierto como trampa de amor
-Si Cortex publica el formato brain/ como estandar abierto, los developers construyen sobre nosotros. El valor no esta en los datos — esta en el sistema. Nadie te encierra: puedes exportar todo. Pero nadie quiere irse porque el valor esta en el grafo de conocimiento, no en los archivos individuales.
+Si Axon publica el formato brain/ como estandar abierto, los developers construyen sobre nosotros. El valor no esta en los datos — esta en el sistema. Nadie te encierra: puedes exportar todo. Pero nadie quiere irse porque el valor esta en el grafo de conocimiento, no en los archivos individuales.
 
 ### Moat 3: Multi-AI es estructuralmente diferente
-Cortex es el unico sistema donde Claude, Codex, GPT-5, y modelos locales (Ollama) trabajan sobre el mismo cerebro. Esto es imposible de replicar para cualquier AI company individual — ninguna puede ser neutral porque todas quieren el lock-in.
+Axon es el unico sistema donde Claude, Codex, GPT-5, y modelos locales (Ollama) trabajan sobre el mismo cerebro. Esto es imposible de replicar para cualquier AI company individual — ninguna puede ser neutral porque todas quieren el lock-in.
 
 ### Moat 4: Identidad encriptada como confianza
-Los usuarios confian en Cortex con sus datos mas sensibles — datos de salud, financieros, de relaciones. Esa confianza es el moat mas profundo que existe. No se puede copiar con features; se gana con anos de comportamiento consistente y arquitectura zero-knowledge.
+Los usuarios confian en Axon con sus datos mas sensibles — datos de salud, financieros, de relaciones. Esa confianza es el moat mas profundo que existe. No se puede copiar con features; se gana con anos de comportamiento consistente y arquitectura zero-knowledge.
 
 ### Moat 5: El grafo de conocimiento es el producto
 Despues de 2 anos, no vendes acceso a una herramienta — vendes acceso a la representacion mas completa de como piensa y trabaja un profesional especifico. Eso es unico. Es tuyo. Y no tiene precio.
@@ -316,6 +316,6 @@ Estas son las decisiones que solo Jorge puede tomar. Las dejo al final:
 
 4. **Local-first vs. Cloud-first:** La arquitectura local-first (como Obsidian) maximiza privacidad pero complica el producto. Cloud-first (como Notion) es mas facil de construir pero compromete la propuesta de privacidad. Hay un hibrido?
 
-5. **El nombre:** Cortex? Synapse? Brain OS? Jarvis (riesgo de trademark)? Algo nuevo?
+5. **El nombre:** Axon? Synapse? Brain OS? Jarvis (riesgo de trademark)? Algo nuevo?
 
 6. **Monetizar antes o escalar primero:** Con 500 usuarios puedes levantar una seed y construir el equipo. O puedes bootstrappear hasta $50K MRR y negociar desde posicion de fortaleza. Cual es tu tolerancia al riesgo y timeline personal?
