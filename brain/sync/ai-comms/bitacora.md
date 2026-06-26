@@ -56,3 +56,23 @@ Paola sigue el setup en `BETA.md`. Jorge usa el brain diariamente esta semana.
 Primera iteracion: identificar el skill mas util para cada usuario.
 
 ---
+
+## 2026-06-26 CLAUDE
+
+**Tarea:** Google Calendar conectado + simplificacion del flujo de auth
+
+**Resultado:**
+- Conector Google Calendar operativo: `brain/sync/connectors/google-calendar/`
+- `auth.mjs` reescrito: abre browser automaticamente, encripta tokens inline con AES-256-GCM, sin dependencia de crypto.mjs
+- `calendar.mjs` actualizado: lee `tokens.enc` directamente con misma clave derivada (PBKDF2 + SHA-512)
+- `.gitignore` actualizado: `tokens.enc` protegido
+- Jorge puede decirle a Axon "agrega al calendario" y ejecuta directamente
+
+**Para CODEX:**
+El conector de Google Calendar esta activo en `brain/sync/connectors/google-calendar/`. Los tokens estan en `tokens.enc` (gitignored). Para operaciones de calendario usa el CLI del conector, no accedas al archivo directamente.
+
+**Proximo paso sugerido:**
+- Conectar Gmail para cerrar el loop de email
+- Fase 0 Semana 2: onboarding con 5 beta users adicionales
+
+---
