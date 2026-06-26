@@ -2,7 +2,6 @@
 /**
  * Axon — Google Calendar OAuth Setup
  * Corre UNA SOLA VEZ en tu PC para obtener el refresh token.
- * El token se guarda encriptado en brain/identity/credentials.json.enc
  *
  * Uso: node brain/sync/connectors/google-calendar/auth.mjs
  */
@@ -10,23 +9,22 @@
 import fs from 'fs';
 import path from 'path';
 import http from 'http';
+import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
-import readline from 'readline';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../../../..');
 const CREDS_PATH = path.join(ROOT, 'brain', 'sync', 'connectors', 'google-calendar', 'client_secret.json');
 
-// Verificar que existe el client_secret.json
 if (!fs.existsSync(CREDS_PATH)) {
-  console.error('\n❌ No encontré client_secret.json');
-  console.error('   Descárgalo de Google Cloud Console y ponlo en:');
+  console.error('\n❌ No encontre client_secret.json');
+  console.error('   Ponlo en:');
   console.error(`   ${CREDS_PATH}\n`);
   process.exit(1);
 }
 
 const creds = JSON.parse(fs.readFileSync(CREDS_PATH, 'utf8'));
-const { client_id, client_secret, redirect_uris } = creds.installed || creds.web;
+const { client_id, client_secret } = creds.installed || creds.web;
 const REDIRECT = 'http://localhost:3000/oauth2callback';
 
 const SCOPES = [
@@ -42,26 +40,41 @@ const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
   `&access_type=offline` +
   `&prompt=consent`;
 
-console.log('\n🔑 Axon — Conectar Google Calendar\n');
-console.log('Paso 1: Abre este URL en tu browser:\n');
-console.log('  ' + authUrl + '\n');
-console.log('Paso 2: Autoriza el acceso a Google Calendar');
-console.log('Paso 3: Espera... (el servidor capturará el código automáticamente)\n');
+console.log('\n Axon — Conectar Google Calendar\n');
+console.log('Abriendo tu browser...\n');
 
-// Servidor local para capturar el callback OAuth
+// Abrir browser automaticamente segun el sistema operativo
+try {
+  if (process.platform === 'win32') {
+    execSync(`start "" "${authUrl}"`);
+  } else if (process.platform === 'darwin') {
+    execSync(`open "${authUrl}"`);
+  } else {
+    execSync(`xdg-open "${authUrl}"`);
+  }
+} catch {
+  console.log('No pude abrir el browser automaticamente.');
+  console.log('Abre este URL manualmente:\n');
+  console.log('  ' + authUrl + '\n');
+}
+
+console.log('-> Autoriza con tu cuenta de Google en el browser');
+console.log('-> Vuelve aqui cuando termines (el servidor captura todo automaticamente)\n');
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost:3000');
   const code = url.searchParams.get('code');
 
   if (!code) {
-    res.end('Error: no se recibió código de autorización');
+    res.writeHead(400);
+    res.end('Error: no se recibio codigo');
     return;
   }
 
-  res.end('<h1>✅ Autorizado! Cierra esta ventana y vuelve a la terminal.</h1>');
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end('<h2 style="font-family:sans-serif;color:green;padding:40px">Autorizado. Cierra esta ventana y vuelve a la terminal.</h2>');
   server.close();
 
-  // Intercambiar code por tokens
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -77,11 +90,11 @@ const server = http.createServer(async (req, res) => {
   const tokens = await tokenRes.json();
 
   if (!tokens.refresh_token) {
-    console.error('\n❌ No se recibió refresh_token. Intenta de nuevo.');
+    console.error('\n Error: no se recibio refresh_token.');
+    console.error('Asegurate de que la pantalla de consentimiento OAuth este configurada correctamente.\n');
     process.exit(1);
   }
 
-  // Guardar tokens en archivo temporal para que crypto.mjs los encripte
   const tokenData = {
     client_id,
     client_secret,
@@ -94,15 +107,23 @@ const server = http.createServer(async (req, res) => {
   const tempPath = path.join(ROOT, 'brain', 'sync', 'connectors', 'google-calendar', '.tokens_temp.json');
   fs.writeFileSync(tempPath, JSON.stringify(tokenData, null, 2));
 
-  console.log('\n✅ Tokens recibidos!\n');
-  console.log('Paso 4: Encripta el token con tu contraseña maestra:\n');
-  console.log('  node brain/security/crypto.mjs write google-calendar\n');
-  console.log('  (Pega el contenido de brain/sync/connectors/google-calendar/.tokens_temp.json)\n');
-  console.log('Paso 5: Borra el archivo temporal:\n');
-  console.log('  rm brain/sync/connectors/google-calendar/.tokens_temp.json\n');
-  console.log('Listo. Desde ahora puedes decirle a Axon "agrega al calendario" y lo hace.\n');
+  console.log('\n Tokens recibidos y guardados temporalmente.\n');
+  console.log('Ahora corre estos 2 comandos:\n');
+  console.log('  1) node brain/security/crypto.mjs write google-calendar');
+  console.log('     (cuando pida datos, pega el contenido de .tokens_temp.json)\n');
+  console.log('  2) del brain\\sync\\connectors\\google-calendar\\.tokens_temp.json\n');
+  console.log('Listo. Axon ya puede manejar tu Google Calendar.\n');
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error('\n El puerto 3000 esta ocupado. Cierra la app que lo usa e intenta de nuevo.\n');
+  } else {
+    console.error('\n Error del servidor:', err.message);
+  }
+  process.exit(1);
 });
 
 server.listen(3000, () => {
-  console.log('Servidor OAuth escuchando en localhost:3000...\n');
+  console.log('Esperando autorizacion en localhost:3000...\n');
 });
