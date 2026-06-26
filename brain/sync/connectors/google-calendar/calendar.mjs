@@ -11,28 +11,34 @@
  * Requiere: tokens encriptados en brain/identity/ (categoría: google-calendar)
  */
 
-import { execSync } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import readline from 'readline';
+import { createDecipheriv, pbkdf2Sync } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '../../../..');
+const TOKEN_PATH = path.join(__dirname, 'tokens.enc');
 
-// Lee tokens desencriptados (pide contraseña si es necesario)
+function decryptTokens(buffer, password) {
+  const salt = buffer.subarray(0, 32);
+  const iv = buffer.subarray(32, 48);
+  const tag = buffer.subarray(48, 64);
+  const ciphertext = buffer.subarray(64);
+  const key = pbkdf2Sync(password, salt, 100_000, 32, 'sha512');
+  const decipher = createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(tag);
+  return JSON.parse(Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8'));
+}
+
 async function getTokens() {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const password = await new Promise(r => rl.question('🔑 Contraseña maestra: ', r));
+  const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
+  const password = await new Promise(r => rl.question('Contrasena maestra: ', r));
   rl.close();
-
   try {
-    const result = execSync(
-      `node "${path.join(ROOT, 'brain/security/crypto.mjs')}" read google-calendar`,
-      { input: password + '\n', encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
-    );
-    return JSON.parse(result.trim());
+    return decryptTokens(readFileSync(TOKEN_PATH), password);
   } catch {
-    console.error('❌ Error al desencriptar tokens. Verifica tu contraseña.');
+    console.error('Error al desencriptar. Verifica tu contrasena o reconecta con: node brain/sync/connectors/google-calendar/auth.mjs');
     process.exit(1);
   }
 }
