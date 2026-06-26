@@ -1,15 +1,20 @@
-# Axon Beta — Jorge & Paola
+# Axon Beta — Grupo v0.1
 
-**Beta privada v0.1 · 2 usuarios · Inicio: 2026-06-25**
+**Beta privada v0.1 · 7 slots · Inicio: 2026-06-25**
 
 ---
 
 ## Estado de los brains
 
-| Usuario | Brain | Skills activos | Estado |
-|---------|-------|----------------|--------|
-| Jorge | `research-os-mobile-brief/` (este repo) | 12 skills completos | ✅ Operativo |
-| Paola | `paola-axon-brain/` (su maquina) | Por configurar | ⬜ Pendiente setup |
+| Usuario | Brain | Skills activos | Skill principal | Estado |
+|---------|-------|----------------|-----------------|--------|
+| Jorge | `research-os-mobile-brief/` (este repo) | 12 skills completos | Research / Trading | ✅ Calendario conectado |
+| Paola | `paola-axon-brain/` (su maquina) | Por configurar | Daily / Email | ⬜ Pendiente setup |
+| Beta-3 | TBD | Por configurar | TBD | ⬜ Slot disponible |
+| Beta-4 | TBD | Por configurar | TBD | ⬜ Slot disponible |
+| Beta-5 | TBD | Por configurar | TBD | ⬜ Slot disponible |
+| Beta-6 | TBD | Por configurar | TBD | ⬜ Slot disponible |
+| Beta-7 | TBD | Por configurar | TBD | ⬜ Slot disponible |
 
 ---
 
@@ -96,6 +101,25 @@ creative     — Proyectos creativos, ideas
 
 ---
 
+## Friction Log
+
+Registro de donde se trabaron los usuarios durante el beta. Cada entrada incluye usuario, fecha y descripcion del problema.
+
+| Fecha | Usuario | Punto de friccion | Resuelto |
+|-------|---------|-------------------|----------|
+| — | — | *(sin registros aun)* | — |
+
+**Como agregar una entrada:**
+```bash
+# Dentro del directorio del brain:
+echo "FRICTION [YYYY-MM-DD] [usuario]: [descripcion del problema]" >> brain/sync/ai-comms/bitacora.md
+git add -A && git commit -m "friction: [resumen]"
+```
+
+O reporta directamente en GitHub Issues con la etiqueta `friction`.
+
+---
+
 ## Feedback de beta
 
 Para reportar lo que no funciona o lo que podria mejorar:
@@ -106,7 +130,7 @@ echo "FEEDBACK: [tu comentario]" >> brain/sync/ai-comms/bitacora.md
 git add -A && git commit -m "feedback: [resumen]"
 ```
 
-O simplemente dile a Jorge directamente.
+O simplemente dile a Jorge directamente (jlmanga22@gmail.com).
 
 ---
 

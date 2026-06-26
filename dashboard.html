@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axon Brain Dashboard</title>
+  <style>
+    :root {
+      --bg:      #090c10;
+      --surface: #0f1318;
+      --card:    #11171d;
+      --border:  rgba(255,255,255,0.07);
+      --line:    #27343f;
+      --text:    #e8eaed;
+      --muted:   #7d8590;
+      --axon:    #57a8ff;
+      --cyan:    #4ecdc4;
+      --green:   #00d4a0;
+      --amber:   #f5a623;
+      --red:     #ff4757;
+      --purple:  #a855f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(9,12,16,0.92);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 12px;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .logo {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: var(--axon);
+    }
+    .logo span { color: var(--muted); font-weight: 400; }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      flex-shrink: 0;
+    }
+    .status-dot.error { background: var(--red); box-shadow: 0 0 6px var(--red); }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    #clock {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+    .btn-refresh {
+      background: none;
+      border: 1px solid var(--line);
+      color: var(--axon);
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-refresh:hover {
+      background: rgba(87,168,255,0.08);
+      border-color: var(--axon);
+    }
+    .btn-refresh:active { opacity: 0.7; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      transition: all .2s;
+    }
+    .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+
+    /* ── MAIN GRID ── */
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px 24px 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      main { grid-template-columns: 1fr; padding: 16px 14px 48px; }
+      header { padding: 12px 14px; }
+      .nav-links { display: none; }
+    }
+
+    /* ── PANEL CARD ── */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .panel.full-width { grid-column: 1 / -1; }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .panel-badge {
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--axon);
+      background: rgba(87,168,255,0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .panel-body { padding: 18px; }
+
+    /* ── BRAIN STATS (Panel 1) ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 10px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+    .stat-count {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--axon);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label {
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* ── RESEARCH (Panel 2) ── */
+    .research-list { display: flex; flex-direction: column; gap: 10px; }
+    .research-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+      gap: 12px;
+    }
+    .ticker-badge {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--bg);
+      background: var(--axon);
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+    .research-meta { min-width: 0; }
+    .research-title {
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .research-excerpt {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .research-score { text-align: right; white-space: nowrap; }
+    .score-value {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .score-label {
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .decision-chip {
+      display: inline-block;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-top: 4px;
+    }
+    .decision-buy   { background: rgba(0,212,160,0.15); color: var(--green); }
+    .decision-watch { background: rgba(245,166,35,0.15); color: var(--amber); }
+    .decision-skip  { background: rgba(255,71,87,0.15);  color: var(--red); }
+
+    /* ── WATCHLIST (Panel 3) ── */
+    .wl-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .wl-table th {
+      text-align: left;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 0 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .wl-table td {
+      padding: 9px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
+    }
+    .wl-table tr:last-child td { border-bottom: none; }
+    .wl-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .wl-ticker { font-weight: 800; color: var(--axon); font-size: 12px; }
+    .wl-name   { color: var(--muted); font-size: 11px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sentiment {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+    .sent-positivo { background: rgba(0,212,160,0.15); color: var(--green); }
+    .sent-negativo { background: rgba(255,71,87,0.15);  color: var(--red); }
+    .sent-mixto    { background: rgba(245,166,35,0.15); color: var(--amber); }
+    .wl-score { font-weight: 700; }
+    .wl-notes { color: var(--muted); font-size: 10px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ── DAILY LOG (Panel 4) ── */
+    .daily-list { display: flex; flex-direction: column; gap: 10px; }
+    .daily-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .daily-date {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--axon);
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .daily-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .daily-excerpt {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── SKILLS (Panel 5) ── */
+    .skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .skill-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+      transition: all .2s;
+    }
+    .skill-chip.active {
+      background: rgba(0,212,160,0.1);
+      border-color: rgba(0,212,160,0.3);
+      color: var(--green);
+    }
+    .skill-chip.inactive {
+      background: rgba(255,255,255,0.03);
+      border-color: var(--border);
+      color: var(--muted);
+    }
+    .skill-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .skill-chip.active .skill-dot   { background: var(--green); box-shadow: 0 0 4px var(--green); }
+    .skill-chip.inactive .skill-dot { background: var(--muted); }
+
+    /* ── MEMORY (Panel 6) ── */
+    .memory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 500px) { .memory-grid { grid-template-columns: 1fr; } }
+    .memory-section h4 {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .memory-text {
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.6;
+      max-height: 150px;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    }
+
+    /* ── LOADING / ERROR STATES ── */
+    .loading-msg {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 20px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    .empty-msg {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 12px 0;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    /* ── REFRESH INDICATOR ── */
+    .refresh-info {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    #next-refresh { color: var(--axon); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <span class="logo">AXON <span>BRAIN</span></span>
+    <div class="status-dot" id="status-dot"></div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Index</a>
+    <a href="jarvis.html">Jarvis</a>
+    <a href="axon.html">Axon</a>
+    <a href="brain.html">Brain</a>
+  </div>
+  <div class="header-right">
+    <span class="refresh-info">Actualiza en <span id="next-refresh">60</span>s</span>
+    <span id="clock"></span>
+    <button class="btn-refresh" onclick="refreshAll()">ACTUALIZAR</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Panel 1: Brain Stats -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Brain Stats</span>
+      <span class="panel-badge" id="stats-badge">— notas</span>
+    </div>
+    <div class="panel-body">
+      <div class="stats-grid" id="stats-grid">
+        <div class="loading-msg">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 2: Research reciente -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Research Reciente</span>
+      <span class="panel-badge">ultimas 5</span>
+    </div>
+    <div class="panel-body">
+      <div class="research-list" id="research-list">
+        <div class="loading-msg">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 3: Watchlist -->
+  <div class="panel full-width">
+    <div class="panel-header">
+      <span class="panel-title">Watchlist</span>
+      <span class="panel-badge" id="wl-badge">— acciones</span>
+    </div>
+    <div class="panel-body" style="overflow-x:auto">
+      <table class="wl-table" id="wl-table">
+        <tbody><tr><td class="loading-msg" colspan="5">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Panel 4: Daily Log -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Daily Log</span>
+      <span class="panel-badge">ultimas 3</span>
+    </div>
+    <div class="panel-body">
+      <div class="daily-list" id="daily-list">
+        <div class="loading-msg">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 5: Skills -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Skills Activos</span>
+      <span class="panel-badge">12 skills</span>
+    </div>
+    <div class="panel-body">
+      <div class="skills-grid" id="skills-grid">
+        <div class="loading-msg">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 6: Memory -->
+  <div class="panel full-width">
+    <div class="panel-header">
+      <span class="panel-title">Memory</span>
+      <span class="panel-badge">preferencias &amp; prioridades</span>
+    </div>
+    <div class="panel-body">
+      <div class="memory-grid" id="memory-grid">
+        <div class="loading-msg">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── Clock ──────────────────────────────────────────────────────────────────
+
+function updateClock() {
+  const now = new Date();
+  const d = now.toLocaleDateString('es-MX', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+  const t = now.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
+  document.getElementById('clock').textContent = `${d}  ${t}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── Auto-refresh countdown ─────────────────────────────────────────────────
+
+let countdown = 60;
+let countdownInterval = null;
+
+function startCountdown() {
+  clearInterval(countdownInterval);
+  countdown = 60;
+  document.getElementById('next-refresh').textContent = countdown;
+  countdownInterval = setInterval(() => {
+    countdown--;
+    document.getElementById('next-refresh').textContent = countdown;
+    if (countdown <= 0) {
+      refreshAll();
+    }
+  }, 1000);
+}
+
+// ── Score color ────────────────────────────────────────────────────────────
+
+function scoreColor(score) {
+  const n = parseFloat(score);
+  if (n >= 8.0) return 'var(--green)';
+  if (n >= 6.0) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function decisionClass(decision) {
+  const d = (decision || '').toLowerCase();
+  if (d.includes('buy'))   return 'decision-buy';
+  if (d.includes('watch')) return 'decision-watch';
+  return 'decision-skip';
+}
+
+function decisionLabel(decision) {
+  const d = (decision || '').toLowerCase();
+  if (d.includes('buy'))   return 'BUY';
+  if (d.includes('watch')) return 'WATCH';
+  if (d.includes('skip'))  return 'SKIP';
+  return (decision || '—').toUpperCase().slice(0, 6);
+}
+
+// ── Sentiment ─────────────────────────────────────────────────────────────
+
+function sentimentClass(s) {
+  const v = (s || '').toLowerCase();
+  if (v === 'positivo') return 'sent-positivo';
+  if (v === 'negativo') return 'sent-negativo';
+  return 'sent-mixto';
+}
+
+// ── Status indicator ──────────────────────────────────────────────────────
+
+function setStatus(ok) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot' + (ok ? '' : ' error');
+}
+
+// ── Panel 1: Brain Stats ──────────────────────────────────────────────────
+
+const SKILL_ORDER = [
+  { key: 'research',      label: 'Research' },
+  { key: 'trading',       label: 'Trading' },
+  { key: 'daily',         label: 'Daily' },
+  { key: 'social',        label: 'Social' },
+  { key: 'email',         label: 'Email' },
+  { key: 'finance',       label: 'Finance' },
+  { key: 'health',        label: 'Health' },
+  { key: 'learning',      label: 'Learning' },
+  { key: 'legal',         label: 'Legal' },
+  { key: 'creative',      label: 'Creative' },
+  { key: 'business',      label: 'Business' },
+  { key: 'relationships', label: 'Relations' },
+];
+
+async function loadStats() {
+  try {
+    const r = await fetch('/api/brain/status');
+    const data = await r.json();
+    const total = Object.values(data).reduce((s, n) => s + n, 0);
+    document.getElementById('stats-badge').textContent = `${total} notas`;
+    const grid = document.getElementById('stats-grid');
+    grid.innerHTML = SKILL_ORDER.map(sk => `
+      <div class="stat-card">
+        <div class="stat-count">${data[sk.key] ?? 0}</div>
+        <div class="stat-label">${sk.label}</div>
+      </div>
+    `).join('');
+    return true;
+  } catch {
+    document.getElementById('stats-grid').innerHTML = '<div class="empty-msg">Error al cargar</div>';
+    return false;
+  }
+}
+
+// ── Panel 2: Research reciente ─────────────────────────────────────────────
+
+async function loadResearch() {
+  try {
+    const r = await fetch('/api/brain/research');
+    const notes = await r.json();
+    const list = document.getElementById('research-list');
+    if (!notes.length) {
+      list.innerHTML = '<div class="empty-msg">Sin notas de research</div>';
+      return;
+    }
+    list.innerHTML = notes.map(n => {
+      const ticker  = n.meta.ticker || n.file.split('-')[0] || '—';
+      const title   = n.meta.title  || n.file.replace('.md', '');
+      const score   = n.meta.score  || '—';
+      const dec     = n.meta.decision || '';
+      const excerpt = n.excerpt || '—';
+      return `
+        <div class="research-item">
+          <div class="ticker-badge">${escHtml(ticker)}</div>
+          <div class="research-meta">
+            <div class="research-title">${escHtml(title)}</div>
+            <div class="research-excerpt">${escHtml(excerpt)}</div>
+          </div>
+          <div class="research-score">
+            <div class="score-value" style="color:${scoreColor(score)}">${score}</div>
+            <div class="score-label">SCORE</div>
+            <div class="decision-chip ${decisionClass(dec)}">${decisionLabel(dec)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch {
+    document.getElementById('research-list').innerHTML = '<div class="empty-msg">Error al cargar</div>';
+  }
+}
+
+// ── Panel 3: Watchlist ─────────────────────────────────────────────────────
+
+function parseWatchlistTable(raw) {
+  const lines = raw.split('\n');
+  const rows = [];
+  let inTable = false;
+  for (const line of lines) {
+    if (!inTable && line.includes('| Ticker |')) { inTable = true; continue; }
+    if (!inTable) continue;
+    if (line.match(/^\|[-| ]+\|$/)) continue; // separator row
+    if (!line.startsWith('|')) { inTable = false; continue; }
+    const cells = line.split('|').map(c => c.trim()).filter((_, i) => i > 0);
+    if (cells.length < 2 || !cells[0]) continue;
+    rows.push({
+      ticker: cells[0] || '—',
+      nombre: cells[1] || '—',
+      sentimiento: cells[2] || '—',
+      score: cells[3] || '—',
+      notas: (cells[5] || '').replace(/\[\[.*?\]\]/g, '').trim() || '—',
+    });
+  }
+  return rows;
+}
+
+async function loadWatchlist() {
+  try {
+    const r = await fetch('/api/brain/watchlist');
+    const { raw } = await r.json();
+    const rows = parseWatchlistTable(raw);
+    document.getElementById('wl-badge').textContent = `${rows.length} acciones`;
+    const tbody = document.querySelector('#wl-table');
+    if (!rows.length) {
+      tbody.innerHTML = '<tbody><tr><td class="empty-msg" colspan="5">Sin acciones en watchlist</td></tr></tbody>';
+      return;
+    }
+    tbody.innerHTML = `
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Nombre</th>
+          <th>Sentimiento</th>
+          <th>Score</th>
+          <th>Notas</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(row => `
+          <tr>
+            <td class="wl-ticker">${escHtml(row.ticker)}</td>
+            <td class="wl-name">${escHtml(row.nombre)}</td>
+            <td><span class="sentiment ${sentimentClass(row.sentimiento)}">${escHtml(row.sentimiento)}</span></td>
+            <td class="wl-score" style="color:${scoreColor(row.score)}">${escHtml(row.score)}</td>
+            <td class="wl-notes">${escHtml(row.notas)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    `;
+  } catch {
+    document.getElementById('wl-table').innerHTML = '<tbody><tr><td class="empty-msg" colspan="5">Error al cargar</td></tr></tbody>';
+  }
+}
+
+// ── Panel 4: Daily Log ─────────────────────────────────────────────────────
+
+async function loadDaily() {
+  try {
+    const r = await fetch('/api/brain/daily');
+    const notes = await r.json();
+    const list = document.getElementById('daily-list');
+    if (!notes.length) {
+      list.innerHTML = '<div class="empty-msg">Sin notas diarias</div>';
+      return;
+    }
+    list.innerHTML = notes.map(n => {
+      const date    = n.meta.date  || n.file.replace('.md','');
+      const title   = n.meta.title || `Brief ${date}`;
+      const excerpt = n.excerpt    || '—';
+      return `
+        <div class="daily-item">
+          <div class="daily-date">${escHtml(String(date))}</div>
+          <div class="daily-title">${escHtml(title)}</div>
+          <div class="daily-excerpt">${escHtml(excerpt)}</div>
+        </div>
+      `;
+    }).join('');
+  } catch {
+    document.getElementById('daily-list').innerHTML = '<div class="empty-msg">Error al cargar</div>';
+  }
+}
+
+// ── Panel 5: Skills Activos ────────────────────────────────────────────────
+
+const ALL_SKILLS = [
+  { key: 'research',      label: 'Research',     core: true },
+  { key: 'trading',       label: 'Trading',      core: true },
+  { key: 'daily',         label: 'Daily',        core: true },
+  { key: 'email',         label: 'Email',        core: true },
+  { key: 'social',        label: 'Social',       core: true },
+  { key: 'finance',       label: 'Finance',      core: false },
+  { key: 'health',        label: 'Health',       core: false },
+  { key: 'relationships', label: 'Relationships',core: false },
+  { key: 'learning',      label: 'Learning',     core: false },
+  { key: 'legal',         label: 'Legal',        core: false },
+  { key: 'creative',      label: 'Creative',     core: false },
+  { key: 'business',      label: 'Business',     core: false },
+];
+
+async function loadSkills() {
+  try {
+    const r = await fetch('/api/brain/status');
+    const data = await r.json();
+    const grid = document.getElementById('skills-grid');
+    grid.innerHTML = ALL_SKILLS.map(sk => {
+      const count  = data[sk.key] ?? 0;
+      const active = sk.core || count > 0;
+      return `
+        <div class="skill-chip ${active ? 'active' : 'inactive'}">
+          <div class="skill-dot"></div>
+          ${escHtml(sk.label)}${count > 0 ? ` <span style="opacity:.6">(${count})</span>` : ''}
+        </div>
+      `;
+    }).join('');
+  } catch {
+    document.getElementById('skills-grid').innerHTML = '<div class="empty-msg">Error al cargar</div>';
+  }
+}
+
+// ── Panel 6: Memory ────────────────────────────────────────────────────────
+
+function extractMemorySnippet(raw, maxLines = 18) {
+  // Strip frontmatter then return first maxLines of content
+  const stripped = raw.replace(/^---[\s\S]*?---\r?\n?/, '');
+  return stripped.split('\n').slice(0, maxLines).join('\n');
+}
+
+async function loadMemory() {
+  try {
+    const r = await fetch('/api/brain/memory');
+    const { preferences, priorities } = await r.json();
+    const grid = document.getElementById('memory-grid');
+    grid.innerHTML = `
+      <div class="memory-section">
+        <h4>Preferencias</h4>
+        <div class="memory-text">${escHtml(extractMemorySnippet(preferences))}</div>
+      </div>
+      <div class="memory-section">
+        <h4>Prioridades</h4>
+        <div class="memory-text">${escHtml(extractMemorySnippet(priorities))}</div>
+      </div>
+    `;
+  } catch {
+    document.getElementById('memory-grid').innerHTML = '<div class="empty-msg">Error al cargar</div>';
+  }
+}
+
+// ── Utility ────────────────────────────────────────────────────────────────
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── Refresh all panels ─────────────────────────────────────────────────────
+
+async function refreshAll() {
+  startCountdown();
+  const btn = document.querySelector('.btn-refresh');
+  btn.textContent = 'CARGANDO...';
+  btn.disabled = true;
+  try {
+    const ok = await Promise.all([
+      loadStats(),
+      loadResearch(),
+      loadWatchlist(),
+      loadDaily(),
+      loadSkills(),
+      loadMemory(),
+    ]);
+    setStatus(ok.every(Boolean));
+  } catch {
+    setStatus(false);
+  } finally {
+    btn.textContent = 'ACTUALIZAR';
+    btn.disabled = false;
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+
+refreshAll();
+</script>
+</body>
+</html>

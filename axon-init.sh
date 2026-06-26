@@ -35,6 +35,13 @@ if ! command -v node &> /dev/null; then
   echo -e "${RED}✗ Node.js no encontrado. Instalar desde https://nodejs.org${NC}"
   exit 1
 fi
+
+NODE_VERSION=$(node --version | sed 's/v//' | cut -d. -f1)
+if [ "$NODE_VERSION" -lt 18 ]; then
+  echo -e "${RED}✗ Node.js v$(node --version) detectado. Se requiere v18 o superior.${NC}"
+  echo -e "${RED}  Actualiza en https://nodejs.org (descargar LTS)${NC}"
+  exit 1
+fi
 echo -e "${GREEN}✓ Node.js $(node --version)${NC}"
 
 if command -v ollama &> /dev/null; then
@@ -45,6 +52,38 @@ else
   OLLAMA_AVAILABLE=false
 fi
 
+echo ""
+
+# ─── Google Calendar (opcional) ───────────────────────────────────────────────
+echo -e "${BLUE}${BOLD}Integraciones opcionales${NC}"
+echo ""
+read -p "Quieres conectar Google Calendar? (s/N): " CONNECT_GCAL
+if [[ "$CONNECT_GCAL" =~ ^[Ss]$ ]]; then
+  GCAL_ENABLED=true
+  echo ""
+  echo -e "${CYAN}${BOLD}Instrucciones para Google Calendar:${NC}"
+  echo ""
+  echo -e "  1. Ve a ${YELLOW}https://console.cloud.google.com${NC}"
+  echo -e "     → Crea un proyecto nuevo (o usa uno existente)"
+  echo -e "     → APIs & Services → Enable APIs → busca 'Google Calendar API' → Habilitar"
+  echo ""
+  echo -e "  2. Credenciales:"
+  echo -e "     → APIs & Services → Credentials → Create Credentials → OAuth client ID"
+  echo -e "     → Application type: Desktop App"
+  echo -e "     → Descarga el archivo JSON → renombralo a ${YELLOW}credentials.json${NC}"
+  echo ""
+  echo -e "  3. Coloca ${YELLOW}credentials.json${NC} en la raiz de tu brain ($(pwd | sed 's|.*||')/tu-brain/)"
+  echo ""
+  echo -e "  4. Primera vez que uses el skill Calendar, Axon abrira el navegador para autorizar."
+  echo -e "     El token se guarda en ${YELLOW}brain/sync/gcal-token.json${NC} (gitignored)."
+  echo ""
+  echo -e "${YELLOW}⚠ Nunca subas credentials.json ni gcal-token.json a GitHub.${NC}"
+  echo ""
+  read -p "Presiona Enter para continuar..."
+else
+  GCAL_ENABLED=false
+  echo -e "${YELLOW}⚠ Puedes conectar Google Calendar despues editando brain/sync/shared-context.md${NC}"
+fi
 echo ""
 
 # ─── Directorio de instalacion ────────────────────────────────────────────────
@@ -336,6 +375,53 @@ if [ "$OLLAMA_AVAILABLE" = false ]; then
   echo ""
 fi
 
+if [ -f "serve.mjs" ]; then
+  echo -e "  ${CYAN}Dashboard disponible:${NC}"
+  echo -e "     ${YELLOW}node serve.mjs${NC}  →  http://localhost:3000"
+  echo ""
+fi
+
 echo -e "${CYAN}Documentacion: BRAIN-PROTOCOL.md${NC}"
 echo -e "${CYAN}Vision del producto: AXON-VISION.md${NC}"
 echo ""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WINDOWS USERS — Equivalente en PowerShell
+# Este script requiere bash. En Windows, usa Git Bash, WSL, o los comandos
+# equivalentes de PowerShell que se muestran a continuacion:
+#
+# # Verificar Node.js v18+
+# node --version
+#
+# # Crear la estructura de carpetas
+# $BrainDir = "mi-axon-brain"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/identity"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/memory/short-term"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/memory/patterns"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/security"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/sync/ai-comms"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/research"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/trading"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/daily"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/email"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/social"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/finance"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/health"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/relationships"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/learning"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/legal"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/creative"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/brain/knowledge/business"
+# New-Item -ItemType Directory -Force -Path "$BrainDir/skills"
+#
+# # Inicializar git
+# Set-Location $BrainDir
+# git init
+# git add -A
+# git commit -m "init: Axon brain"
+#
+# # Abrir con Claude Code
+# claude .
+#
+# Para el paso completo en Windows, revisa ONBOARDING.md — Seccion 2 (Windows).
+# ─────────────────────────────────────────────────────────────────────────────
