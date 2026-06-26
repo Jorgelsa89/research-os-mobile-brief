@@ -4,3 +4,5 @@ localtunnel.*.log
 brain/knowledge/email/
 brain/identity/*.enc
 brain/memory/short-term/
+brain/sync/connectors/**/client_secret.json
+brain/sync/connectors/**/.tokens_temp.json
