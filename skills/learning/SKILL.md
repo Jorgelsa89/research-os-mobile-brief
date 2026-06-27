@@ -1,15 +1,17 @@
 ---
 skill: learning
 version: 1.0
+domain: acelerador de expertise — aprendizaje, mapas de conocimiento, repaso espaciado
 triggers: ["quiero aprender", "explicame", "como funciona", "ensenme", "estudiar", "dominar", "entender mejor", "repaso de", "que es", "cuales son los fundamentos de"]
 output: brain/knowledge/learning/
+status: activo
 ---
 
 # Skill: Learning — Tu Acelerador de Expertise
 
 ## Que hace este skill
 
-El cerebro olvida el 80% de lo nuevo en 3 dias (curva de Ebbinghaus). Cortex convierte cada sesion de aprendizaje en conocimiento persistente, conectado con lo que ya sabes, y lo surfacea de vuelta en el momento exacto en que es relevante — no cuando lo pides, sino cuando lo necesitas.
+El cerebro olvida el 80% de lo nuevo en 3 dias (curva de Ebbinghaus). Jarvis convierte cada sesion de aprendizaje en conocimiento persistente, conectado con lo que ya sabes, y lo surfacea de vuelta en el momento exacto en que es relevante — no cuando lo pides, sino cuando lo necesitas.
 
 ## Subdominios
 
@@ -27,7 +29,7 @@ Aprende cualquier tema de forma estructurada:
 ### 2. Insight Capture
 Guarda y conecta insights del dia a dia:
 - Un insight de un libro, podcast, conversacion
-- Cortex lo conecta con notas existentes automaticamente
+- Jarvis lo conecta con notas existentes automaticamente
 - Genera las 3 preguntas que profundizarian el insight
 - Lo agenda para repaso en 7 dias
 
@@ -67,4 +69,4 @@ Mapea la ruta para dominar cualquier skill profesional:
 
 ## La Filosofia del Skill
 
-El aprendizaje no es acumular informacion — es construir conexiones. Cada nueva nota en brain/knowledge/ debe conectarse con al menos dos notas existentes via [[wikilinks]]. El cerebro de Cortex aprende exactamente como aprende el cerebro humano: por asociacion y repeticion espaciada.
+El aprendizaje no es acumular informacion — es construir conexiones. Cada nueva nota en brain/knowledge/ debe conectarse con al menos dos notas existentes via [[wikilinks]]. El cerebro de Axon aprende exactamente como aprende el cerebro humano: por asociacion y repeticion espaciada.

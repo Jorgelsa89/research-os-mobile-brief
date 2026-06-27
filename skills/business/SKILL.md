@@ -1,15 +1,17 @@
 ---
 skill: business
 version: 1.0
+domain: COO personal — clientes, proyectos, pipeline, facturas, candidatos, proveedores
 triggers: ["cliente", "proyecto", "propuesta", "factura", "pipeline", "sales", "candidato", "contratar", "proveedor", "contrato de servicio", "reunión de negocio", "seguimiento comercial"]
 output: brain/knowledge/business/
+status: activo
 ---
 
 # Skill: Business — Tu COO Personal
 
 ## Que hace este skill
 
-Si eres solopreneur o tienes un equipo pequeno, manejas el trabajo de 5 roles al mismo tiempo. Cortex actua como tu COO: mantiene contexto de cada cliente, rastrea proyectos, gestiona el pipeline de ventas, y nunca deja que nada caiga entre las grietas.
+Si eres solopreneur o tienes un equipo pequeno, manejas el trabajo de 5 roles al mismo tiempo. Jarvis actua como tu COO: mantiene contexto de cada cliente, rastrea proyectos, gestiona el pipeline de ventas, y nunca deja que nada caiga entre las grietas.
 
 ## Subdominios
 

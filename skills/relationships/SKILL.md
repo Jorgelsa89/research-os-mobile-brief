@@ -1,15 +1,17 @@
 ---
 skill: relationships
 version: 1.0
+domain: CRM personal — memoria relacional, contactos, seguimientos, familia
 triggers: ["hablar con", "llamar a", "reunion con", "como esta", "remember", "recuerda que", "le dije a", "personal CRM", "cumpleanos", "seguimiento con"]
 output: brain/knowledge/relationships/
+status: activo
 ---
 
 # Skill: Relationships — Tu CRM Personal
 
 ## Que hace este skill
 
-La mayoria de las relaciones importantes decaen por falta de mantenimiento, no por falta de interes. Cortex es tu sistema de memoria relacional: recuerda lo que importa a cada persona, cuando hablaron por ultima vez, lo que prometiste, y te avisa cuando una relacion importante necesita atencion.
+La mayoria de las relaciones importantes decaen por falta de mantenimiento, no por falta de interes. Jarvis es tu sistema de memoria relacional: recuerda lo que importa a cada persona, cuando hablaron por ultima vez, lo que prometiste, y te avisa cuando una relacion importante necesita atencion.
 
 ## Subdominios
 

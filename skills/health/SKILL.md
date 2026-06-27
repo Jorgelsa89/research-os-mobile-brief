@@ -1,15 +1,17 @@
 ---
 skill: health
 version: 1.0
+domain: diario de salud y bienestar — sintomas, medicos, ejercicio, sueno, nutricion
 triggers: ["sintomas", "dolor", "medico", "cita medica", "medicamento", "ejercicio", "sueno", "comi", "me siento", "energia", "salud"]
 output: brain/knowledge/health/
+status: activo
 ---
 
 # Skill: Health — Tu Historial de Bienestar
 
 ## Que hace este skill
 
-Cortex actua como un diario de salud inteligente. No diagnostica — registra, detecta patrones y te prepara para conversaciones con medicos. Convierte datos fragmentados (como te sentiste, que comiste, como dormiste) en un historial coherente que cualquier medico agradece recibir.
+Jarvis actua como un diario de salud inteligente. No diagnostica — registra, detecta patrones y te prepara para conversaciones con medicos. Convierte datos fragmentados (como te sentiste, que comiste, como dormiste) en un historial coherente que cualquier medico agradece recibir.
 
 ## Subdominios
 

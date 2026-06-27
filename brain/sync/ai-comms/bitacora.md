@@ -76,3 +76,26 @@ El conector de Google Calendar esta activo en `brain/sync/connectors/google-cale
 - Fase 0 Semana 2: onboarding con 5 beta users adicionales
 
 ---
+
+## 2026-06-26 CLAUDE
+
+**Tarea:** Capacidades de auto-mejora — crear skills, entrenar, y limpieza de consistencia
+
+**Resultado:**
+- **Gmail connector** (`brain/sync/connectors/gmail/`): auth + CLI (list/read/unread/triage/send) via Gmail REST API, mismo patron de encriptacion que Calendar
+- **Dashboard en vivo** (`dashboard.html` + `serve.mjs` extendido): 6 paneles que leen el brain via `/api/brain/*` en tiempo real. Verificado funcionando.
+- **Skill Creator** (`skills/skill-creator/`): meta-skill + `scaffold.mjs` ejecutable que genera skills nuevos con formato canonico. PROBADO: crea SKILL.md valido, lessons.md, y carpeta en brain/knowledge.
+- **Trainer** (`skills/trainer/` + `brain/memory/training/`): cierra el loop Uso→Leccion→Patron→Mejora. Incluye feedback-protocol, training-log, skill-scores (madurez de los 12 skills).
+- **Estandar canonico** (`skills/_TEMPLATE/SKILL.md`): formato unico para todos los skills
+- **Limpieza**: branding Cortex→Jarvis/Axon corregido en 7 skills; frontmatter unificado en los 12 skills (todos con skill/version/domain/triggers/output/status)
+- **ONBOARDING.md** + BETA.md actualizado (7 slots, friction log)
+
+**Para CODEX:**
+Ahora Axon puede crear sus propios skills y entrenarse. Para crear un skill: `node skills/skill-creator/scaffold.mjs <nombre> "<dominio>" "<triggers>"`. Para el loop de aprendizaje, lee `brain/memory/training/README.md`. El formato canonico de todo skill esta en `skills/_TEMPLATE/SKILL.md` — respetalo si creas skills.
+
+**Proximo paso sugerido:**
+- Correr el primer ciclo real de entrenamiento ("entrena")
+- Conectar broker API (Schwab/thinkorswim) para Robin Hood Agent
+- Fase 1 monetizacion: dashboard como producto
+
+---

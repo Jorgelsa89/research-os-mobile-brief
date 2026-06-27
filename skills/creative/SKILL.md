@@ -1,15 +1,17 @@
 ---
 skill: creative
 version: 1.0
+domain: OS de proyectos creativos — libros, podcast, newsletter, articulos, guiones
 triggers: ["escribe", "libro", "capitulo", "podcast", "episodio", "newsletter", "articulo", "idea de contenido", "blog", "guion", "brief creativo", "proyecto creativo"]
 output: brain/knowledge/creative/
+status: activo
 ---
 
 # Skill: Creative — Tu OS de Proyectos Creativos
 
 ## Que hace este skill
 
-Los proyectos creativos mueren porque las ideas no tienen un hogar. Cortex es el archivo vivo de todos tus proyectos creativos: notas de libros en progreso, episodios de podcast, newsletters, guiones, ideas sin desarrollar. Todo conectado, todo buscable, todo evolucionando.
+Los proyectos creativos mueren porque las ideas no tienen un hogar. Jarvis es el archivo vivo de todos tus proyectos creativos: notas de libros en progreso, episodios de podcast, newsletters, guiones, ideas sin desarrollar. Todo conectado, todo buscable, todo evolucionando.
 
 ## Subdominios
 
@@ -69,4 +71,4 @@ Convierte tu vision en briefs accionables para disenadores:
 
 ## La Filosofia Creativa
 
-Los mejores proyectos creativos no nacen de una sesion de inspiracion. Nacen de ideas que se acumulan, se conectan, y maduran con el tiempo. Cortex hace que cada pensamiento casual sobre un proyecto sea capturado y conectado. Cuando finalmente te sientas a crear, el trabajo esta 60% hecho.
+Los mejores proyectos creativos no nacen de una sesion de inspiracion. Nacen de ideas que se acumulan, se conectan, y maduran con el tiempo. Jarvis hace que cada pensamiento casual sobre un proyecto sea capturado y conectado. Cuando finalmente te sientas a crear, el trabajo esta 60% hecho.

@@ -1,15 +1,17 @@
 ---
 skill: finance
 version: 1.0
+domain: CFO personal — patrimonio, suscripciones, flujo de caja, impuestos
 triggers: ["mi situacion financiera", "cuanto tengo", "suscripciones", "deudas", "patrimonio", "flujo de caja", "CFO", "presupuesto", "impuestos", "seguro"]
 output: brain/knowledge/finance/
+status: activo
 ---
 
 # Skill: Finance — CFO Personal
 
 ## Que hace este skill
 
-Convierte a Cortex en tu CFO personal. Monitorea tu patrimonio neto, detecta subscripciones invisibles, proyecta flujo de caja, y prepara para la temporada de impuestos. No gestiona dinero — gestiona conocimiento financiero.
+Convierte a Jarvis en tu CFO personal. Monitorea tu patrimonio neto, detecta subscripciones invisibles, proyecta flujo de caja, y prepara para la temporada de impuestos. No gestiona dinero — gestiona conocimiento financiero.
 
 ## Subdominios
 

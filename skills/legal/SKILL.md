@@ -1,17 +1,19 @@
 ---
 skill: legal
 version: 1.0
+domain: guardian de contratos y obligaciones — clausulas, deadlines, IP, compliance
 triggers: ["contrato", "acuerdo", "clausula", "deadline legal", "compliance", "marca registrada", "ip", "propiedad intelectual", "demanda", "obligacion legal", "vencimiento de contrato", "renovacion"]
 output: brain/knowledge/legal/
+status: activo
 ---
 
 # Skill: Legal — Tu Guardian de Contratos y Obligaciones
 
 ## Que hace este skill
 
-Los problemas legales casi siempre vienen de dos lugares: no leer los contratos que firmas, o olvidar las obligaciones que aceptaste. Cortex lee contratos contigo, extrae las clausulas que importan, rastrea deadlines, y te avisa antes de que venza algo importante.
+Los problemas legales casi siempre vienen de dos lugares: no leer los contratos que firmas, o olvidar las obligaciones que aceptaste. Jarvis lee contratos contigo, extrae las clausulas que importan, rastrea deadlines, y te avisa antes de que venza algo importante.
 
-**IMPORTANTE:** Cortex no es un abogado. Siempre consultar con un profesional legal para decisiones importantes.
+**IMPORTANTE:** Jarvis no es un abogado. Siempre consultar con un profesional legal para decisiones importantes.
 
 ## Subdominios
 

@@ -2,6 +2,9 @@
 skill: trading
 version: 1.0
 domain: trading y gestion de portafolio
+triggers: ["watchlist", "agrega [TICKER] a la watchlist", "quita [TICKER] de la watchlist", "alerta en [TICKER]", "backtest de", "como van mis posiciones", "senales de hoy"]
+output: brain/knowledge/trading/
+status: activo
 ---
 
 # Skill: Trading

@@ -2,6 +2,9 @@
 skill: email
 version: 1.0
 domain: gestion de correo electronico
+triggers: ["correos", "triage", "resume este correo", "responde a", "que pendientes de correo tengo", "seguimiento de"]
+output: brain/knowledge/email/
+status: activo
 ---
 
 # Skill: Email

@@ -2,6 +2,9 @@
 skill: daily
 version: 1.0
 domain: brief diario y cierre del dia
+triggers: ["que hay para hoy", "brief del dia", "brief matutino", "cierra el dia", "resumen del dia", "que hice hoy", "pendientes"]
+output: brain/knowledge/daily/
+status: activo
 ---
 
 # Skill: Daily

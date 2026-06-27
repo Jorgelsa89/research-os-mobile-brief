@@ -2,6 +2,9 @@
 skill: social
 version: 1.0
 domain: contenido para redes sociales
+triggers: ["genera post", "crea carrusel", "contenido para Instagram", "publica sobre", "script para reel", "adapta [research] para redes"]
+output: brain/knowledge/social/
+status: activo
 ---
 
 # Skill: Social (secundario)

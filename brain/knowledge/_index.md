@@ -18,6 +18,7 @@ status: activo
 | `social/borradores/` | Borradores pendientes |
 | `trading/` | Watchlist, alertas, backtests |
 | `email/` | Resumenes y seguimiento |
+| `skill-creator/` | Outputs del meta-skill que crea skills |
 | `inbox/` | Items sin procesar |
 
 ## Notas de investigacion

@@ -2,6 +2,9 @@
 skill: research
 version: 1.0
 domain: investigacion financiera y tecnologica
+triggers: ["investiga", "analiza [TICKER]", "brief de", "que sabes de", "que paso con", "research"]
+output: brain/knowledge/research/
+status: activo
 ---
 
 # Skill: Research
