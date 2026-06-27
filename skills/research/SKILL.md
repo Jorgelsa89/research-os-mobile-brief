@@ -55,6 +55,17 @@ Archivo en `brain/knowledge/research/[TICKER]-[Tema]-[YYYY-MM-DD].md` con:
 10. Actualizar `brain/knowledge/_index.md` con la nueva nota
 11. Ofrecer: "Quieres que actualice la watchlist?" o "Quieres un post sobre esto?"
 
+## Reglas aprendidas
+
+> Estas reglas vienen del loop de entrenamiento (`skills/trainer/`). Se promueven
+> desde `lessons.md` cuando un patron se confirma.
+
+1. **Beneficiarios secundarios > principal** (desde 2026-06-08): al analizar un
+   catalizador, evaluar siempre la cadena de valor completa. El beneficiario
+   secundario (ej. MediaTek en el caso NVDA RTX Spark) puede tener mejor edge que
+   el beneficiario directo, porque el consenso del mercado ya descuenta al obvio.
+   Incluir al menos un beneficiario secundario en cada analisis de acciones vinculadas.
+
 ## Conexiones con otros skills
 
 - **Trading:** Despues de un research, ofrecer agregar acciones a la watchlist

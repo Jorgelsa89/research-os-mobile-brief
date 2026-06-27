@@ -24,6 +24,24 @@ Las entradas mas recientes van arriba.
 
 ## Entradas
 
+### 2026-06-26 — Ciclo 01 (primer ciclo real)
+
+- Lecciones revisadas: research (1).
+- Patrones detectados: "beneficiarios secundarios pueden tener mejor edge que el
+  principal" — confirmado, originado en el analisis NVDA RTX Spark (2026-06-08).
+- Cambios aplicados:
+  - `skills/research/SKILL.md`: agregada seccion "Reglas aprendidas" con la regla
+    formal de beneficiarios secundarios. La leccion paso de `lessons.md` a regla
+    operativa del skill (loop cerrado).
+  - `skills/daily/SKILL.md`: integrados los conectores en vivo (Calendar + Gmail)
+    al proceso del brief matutino.
+- Skills tocados: research, daily.
+- Lecciones huerfanas (pendientes): ninguna nueva. Trading, email y social aun no
+  tienen lecciones reales que procesar (esperan uso).
+- Siguiente foco: tras varios usos reales, consolidar patrones de trading y email.
+
+---
+
 ### 2026-06-26 — Ciclo 00 (genesis)
 
 - Lecciones revisadas: ninguna procesada aun (baseline). Existen `lessons.md` en
