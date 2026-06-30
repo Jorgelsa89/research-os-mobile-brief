@@ -1,0 +1,88 @@
+name: Deploy Pages
+
+# Despliega las landing pages estaticas de Axon a GitHub Pages.
+#
+# SEGURIDAD: usamos una ALLOWLIST explicita. Solo se copian al directorio
+# de publicacion (_site/) los archivos publicos enumerados abajo. NUNCA se
+# publican el cerebro (brain/), monetize/ (claves, sales-log, *.enc, *.key,
+# tokens), test/, skills/, ni codigo del backend. Si quieres publicar un
+# archivo nuevo, agregalo de forma explicita al paso "Build _site".
+#
+# DECISION DE ENRUTAMIENTO:
+#   - La pagina de entrada (root /) es la landing del producto: axon.html.
+#     Por eso copiamos axon.html -> _site/index.html.
+#   - El index.html original (la PWA) se conserva como _site/app.html para
+#     no perderlo y poder enlazarlo desde la landing.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permisos minimos requeridos por las actions oficiales de Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Evita despliegues concurrentes; deja terminar el que esta en curso.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build _site (allowlist de archivos publicos)
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+
+          # --- Paginas HTML publicas (allowlist explicita) ---
+          # Landing del producto como home (root /).
+          cp axon.html       _site/index.html
+          # PWA original conservada como /app.html.
+          cp index.html      _site/app.html
+          # Resto de paginas publicas, con su nombre original.
+          cp axon.html       _site/axon.html
+          cp pricing.html    _site/pricing.html
+          cp dashboard.html  _site/dashboard.html
+          cp jarvis.html     _site/jarvis.html
+          cp brain.html      _site/brain.html
+
+          # --- Assets publicos de la PWA (allowlist) ---
+          cp manifest.webmanifest _site/manifest.webmanifest
+          cp styles.css           _site/styles.css
+          cp sw.js                _site/sw.js
+          # Deshabilita el procesamiento Jekyll en Pages.
+          cp .nojekyll            _site/.nojekyll
+
+          # Iconos PWA (solo imagenes, directorio acotado).
+          mkdir -p _site/icons
+          cp icons/*.png _site/icons/
+
+          echo "Contenido publicado:"
+          find _site -type f | sort
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
