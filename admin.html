@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Axon — Admin · Ventas</title>
+<style>
+  :root {
+    --bg:#090c10; --surface:#0f1318; --card:#11171d; --border:rgba(255,255,255,0.07);
+    --text:#e8eaed; --muted:#7d8590; --axon:#57a8ff; --green:#00d4a0;
+    --amber:#f5a623; --red:#ff4757; --purple:#a855f7;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); min-height:100vh;
+    font-family:'SF Mono','Fira Code','Cascadia Code','Consolas',monospace; line-height:1.5; }
+  header { display:flex; align-items:center; justify-content:space-between;
+    padding:16px 22px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .logo { font-weight:700; letter-spacing:1px; }
+  .logo span { color:var(--axon); }
+  .nav-links a { color:var(--muted); text-decoration:none; margin:0 8px; font-size:13px; }
+  .nav-links a:hover { color:var(--axon); }
+  .btn { background:var(--axon); color:#000; border:none; padding:7px 14px; border-radius:6px;
+    font-family:inherit; font-weight:700; font-size:12px; cursor:pointer; }
+  .btn:hover { opacity:0.85; }
+  main { max-width:1100px; margin:0 auto; padding:24px 22px; }
+  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+  .kpi { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px; }
+  .kpi .label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+  .kpi .value { font-size:30px; font-weight:700; margin-top:6px; }
+  .kpi .sub { font-size:12px; color:var(--muted); margin-top:2px; }
+  .kpi.mrr .value { color:var(--green); }
+  .kpi.arr .value { color:var(--axon); }
+  .kpi.soon .value { color:var(--amber); }
+  .kpi.lost .value { color:var(--red); }
+  .panel { background:var(--card); border:1px solid var(--border); border-radius:10px;
+    margin-bottom:20px; overflow:hidden; }
+  .panel-header { padding:14px 18px; border-bottom:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:center; }
+  .panel-title { font-weight:700; font-size:14px; }
+  .panel-badge { font-size:11px; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; padding:10px 18px; color:var(--muted); font-weight:600;
+    font-size:11px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border); }
+  td { padding:11px 18px; border-bottom:1px solid var(--border); }
+  tr:last-child td { border-bottom:none; }
+  .tier { font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; }
+  .tier-pro { background:rgba(87,168,255,0.15); color:var(--axon); }
+  .tier-team { background:rgba(168,85,247,0.15); color:var(--purple); }
+  .tier-enterprise { background:rgba(0,212,160,0.15); color:var(--green); }
+  .tier-free { background:rgba(125,133,144,0.15); color:var(--muted); }
+  .pill { font-size:11px; padding:2px 8px; border-radius:10px; }
+  .pill-active { background:rgba(0,212,160,0.12); color:var(--green); }
+  .pill-soon { background:rgba(245,166,35,0.12); color:var(--amber); }
+  .pill-expired { background:rgba(255,71,87,0.12); color:var(--red); }
+  .cmd { font-size:11px; color:var(--axon); background:rgba(87,168,255,0.07);
+    padding:2px 6px; border-radius:4px; cursor:pointer; }
+  .empty { padding:40px; text-align:center; color:var(--muted); }
+  .renew-row { background:rgba(245,166,35,0.04); }
+  @media (max-width:760px){ .kpis{grid-template-columns:repeat(2,1fr);} .hide-sm{display:none;} }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">AXON <span>ADMIN</span></div>
+  <div class="nav-links">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="index.html">Index</a>
+  </div>
+  <button class="btn" onclick="load()">ACTUALIZAR</button>
+</header>
+
+<main>
+  <div class="kpis">
+    <div class="kpi mrr"><div class="label">MRR</div><div class="value" id="mrr">$0</div><div class="sub">ingreso mensual recurrente</div></div>
+    <div class="kpi arr"><div class="label">ARR proyectado</div><div class="value" id="arr">$0</div><div class="sub">MRR × 12</div></div>
+    <div class="kpi"><div class="label">Clientes activos</div><div class="value" id="active">0</div><div class="sub" id="total">de 0 emitidas</div></div>
+    <div class="kpi soon"><div class="label">Vencen en 7 dias</div><div class="value" id="soon-count">0</div><div class="sub">requieren renovacion</div></div>
+  </div>
+
+  <div class="panel" id="renew-panel" style="display:none;">
+    <div class="panel-header">
+      <span class="panel-title">⏰ Renovaciones urgentes</span>
+      <span class="panel-badge">vencen pronto — contacta al cliente</span>
+    </div>
+    <table><tbody id="renew-body"></tbody></table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Clientes</span>
+      <span class="panel-badge" id="dist"></span>
+    </div>
+    <table>
+      <thead><tr><th>Cliente</th><th>Plan</th><th class="hide-sm">Emitida</th><th>Expira</th><th>Estado</th></tr></thead>
+      <tbody id="sales-body"><tr><td colspan="5" class="empty">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="panel" id="lost-panel" style="display:none;">
+    <div class="panel-header">
+      <span class="panel-title">❌ Clientes perdidos</span>
+      <span class="panel-badge">licencias vencidas — recuperables</span>
+    </div>
+    <table><tbody id="lost-body"></tbody></table>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => '$' + Number(n).toLocaleString('en-US');
+
+function tierTag(t){ return `<span class="tier tier-${t}">${t.toUpperCase()}</span>`; }
+function copyCmd(el){ navigator.clipboard?.writeText(el.dataset.cmd); el.textContent='copiado ✓'; setTimeout(()=>el.textContent=el.dataset.label,1200); }
+
+async function load(){
+  let d;
+  try { d = await (await fetch('/api/admin/sales')).json(); }
+  catch { $('sales-body').innerHTML = '<tr><td colspan="5" class="empty">Arranca el server: node serve.mjs</td></tr>'; return; }
+
+  $('mrr').textContent = fmt(d.mrr);
+  $('arr').textContent = fmt(d.arr);
+  $('active').textContent = d.active;
+  $('total').textContent = `de ${d.total||0} emitidas`;
+  $('soon-count').textContent = d.soon.length;
+
+  // distribucion por tier
+  const dist = Object.entries(d.byTier||{}).map(([t,n])=>`${n} ${t}`).join(' · ');
+  $('dist').textContent = dist || '';
+
+  // tabla de clientes
+  if (!d.sales.length) {
+    $('sales-body').innerHTML = '<tr><td colspan="5" class="empty">Aun no has emitido licencias. Vende la primera con:<br><code>node monetize/license.mjs issue cliente@email.com pro 1</code></td></tr>';
+  } else {
+    const today = new Date().toISOString().slice(0,10);
+    const in7 = new Date(Date.now()+7*86400000).toISOString().slice(0,10);
+    $('sales-body').innerHTML = d.sales.map(l=>{
+      let estado, cls;
+      if (l.expires!=='never' && l.expires<today){ estado='vencida'; cls='pill-expired'; }
+      else if (l.expires!=='never' && l.expires<=in7){ estado='vence pronto'; cls='pill-soon'; }
+      else { estado='activa'; cls='pill-active'; }
+      return `<tr><td>${l.email}</td><td>${tierTag(l.tier)}</td><td class="hide-sm">${l.issued}</td><td>${l.expires}</td><td><span class="pill ${cls}">${estado}</span></td></tr>`;
+    }).join('');
+  }
+
+  // renovaciones
+  if (d.soon.length){
+    $('renew-panel').style.display='block';
+    $('renew-body').innerHTML = d.soon.map(l=>{
+      const cmd = `node monetize/license.mjs issue ${l.email} ${l.tier} 1`;
+      return `<tr class="renew-row"><td>${l.email}</td><td>${tierTag(l.tier)}</td><td>expira ${l.expires}</td><td><span class="cmd" data-cmd="${cmd}" data-label="renovar ⧉" onclick="copyCmd(this)">renovar ⧉</span></td></tr>`;
+    }).join('');
+  } else $('renew-panel').style.display='none';
+
+  // perdidos
+  if (d.expired.length){
+    $('lost-panel').style.display='block';
+    $('lost-body').innerHTML = d.expired.map(l=>{
+      const cmd = `node monetize/license.mjs issue ${l.email} ${l.tier} 1`;
+      return `<tr><td>${l.email}</td><td>${tierTag(l.tier)}</td><td>vencio ${l.expires}</td><td><span class="cmd" data-cmd="${cmd}" data-label="re-emitir ⧉" onclick="copyCmd(this)">re-emitir ⧉</span></td></tr>`;
+    }).join('');
+  } else $('lost-panel').style.display='none';
+}
+load();
+</script>
+</body>
+</html>

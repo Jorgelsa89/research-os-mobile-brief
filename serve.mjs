@@ -136,6 +136,27 @@ function apiMemory() {
   };
 }
 
+/** Panel de admin: lee el CRM de ventas (sales-log) y calcula metricas.
+ *  Solo se sirve en localhost — contiene emails de clientes. */
+function apiAdminSales() {
+  const logPath = join(__dirname, 'monetize', 'sales-log.json');
+  if (!existsSync(logPath)) return { sales: [], active: 0, mrr: 0, soon: [], expired: [] };
+  let log = [];
+  try { log = JSON.parse(readFileSync(logPath, 'utf8')); } catch { return { sales: [], active: 0, mrr: 0, soon: [], expired: [] }; }
+  const prices = { pro: 29, team: 19, enterprise: 0, free: 0 };
+  const today = new Date().toISOString().slice(0, 10);
+  const in7 = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+  const isActive = (l) => l.expires === 'never' || l.expires >= today;
+  const active = log.filter(isActive);
+  const mrr = active.reduce((s, l) => s + (prices[l.tier] || 0), 0);
+  const soon = log.filter(l => l.expires !== 'never' && l.expires >= today && l.expires <= in7);
+  const expired = log.filter(l => l.expires !== 'never' && l.expires < today);
+  // distribucion por tier
+  const byTier = {};
+  for (const l of active) byTier[l.tier] = (byTier[l.tier] || 0) + 1;
+  return { sales: log, active: active.length, total: log.length, mrr, arr: mrr * 12, soon, expired, byTier };
+}
+
 /** Valida la licencia local (offline) y devuelve el tier + features. */
 function apiLicense() {
   const licPath = join(BRAIN, 'identity', 'license.key');
@@ -175,6 +196,13 @@ const server = createServer((req, res) => {
   if (url === '/api/brain/daily')     { return jsonOk(res, apiDaily()); }
   if (url === '/api/brain/memory')    { return jsonOk(res, apiMemory()); }
   if (url === '/api/license')         { return jsonOk(res, apiLicense()); }
+  // Admin: solo localhost (datos de clientes)
+  if (url === '/api/admin/sales') {
+    const ra = req.socket.remoteAddress || '';
+    const isLocal = ra === '127.0.0.1' || ra === '::1' || ra === '::ffff:127.0.0.1';
+    if (!isLocal) { res.writeHead(403); return res.end('403 — admin solo en localhost'); }
+    return jsonOk(res, apiAdminSales());
+  }
 
   // ── Static files ──
   if (url === '/' || url === '') url = '/index.html';
