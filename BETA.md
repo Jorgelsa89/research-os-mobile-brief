@@ -9,7 +9,7 @@
 | Usuario | Brain | Skills activos | Skill principal | Estado |
 |---------|-------|----------------|-----------------|--------|
 | Jorge | `research-os-mobile-brief/` (este repo) | 12 skills completos | Research / Trading | ✅ Calendario conectado |
-| Paola | `paola-template/` → paquete | daily, email, relationships, learning, creative | Daily / Email | 🟡 Paquete listo, pendiente activar |
+| Paola | paquete enviado (Pro) | daily, email, relationships, learning, creative | Daily / Email | ✅ Pro pre-activado, expira 2026-09-30 |
 | Beta-3 | TBD | Por configurar | TBD | ⬜ Slot disponible |
 | Beta-4 | TBD | Por configurar | TBD | ⬜ Slot disponible |
 | Beta-5 | TBD | Por configurar | TBD | ⬜ Slot disponible |
