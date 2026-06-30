@@ -6,17 +6,21 @@
  * Lee solo fuentes locales (no pide contrasena), asi puede correr al arrancar.
  *
  * Uso:
- *   node brain/brief.mjs          → imprime el brief del dia
+ *   node brain/brief.mjs          → brief rapido (local, sin contrasena, al arrancar)
  *   node brain/brief.mjs --json   → devuelve el brief como JSON (para el dashboard)
+ *   node brain/brief.mjs --full   → brief completo: agrega Calendar + Gmail en vivo
+ *                                    (pide la contrasena maestra de los conectores)
  */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const K = join(ROOT, 'brain', 'knowledge');
 const AS_JSON = process.argv.includes('--json');
+const FULL = process.argv.includes('--full');
 
 const C = {
   reset: '\x1b[0m', bold: '\x1b[1m', dim: '\x1b[2m',
@@ -126,4 +130,31 @@ if (!brief.research.length && !brief.watchlist.length && !brief.pendientes.lengt
   console.log(`${C.dim}  Tu cerebro esta limpio. Di "investiga [algo]" para empezar.${C.reset}\n`);
 }
 
-console.log(`${C.dim}  Para el brief completo con calendario y correo, di "que hay para hoy" en Claude Code.${C.reset}\n`);
+// --- Modo completo: Calendar + Gmail en vivo ---
+if (FULL) {
+  const connectors = [
+    { name: 'Calendar', icon: '📅', token: 'brain/sync/connectors/google-calendar/tokens.enc',
+      cmd: ['brain/sync/connectors/google-calendar/calendar.mjs', 'today'] },
+    { name: 'Gmail', icon: '📬', token: 'brain/sync/connectors/gmail/tokens.enc',
+      cmd: ['brain/sync/connectors/gmail/gmail.mjs', 'triage'] },
+  ];
+  let any = false;
+  for (const c of connectors) {
+    if (!existsSync(join(ROOT, c.token))) continue;
+    any = true;
+    console.log(`${C.bold}  ${c.icon} ${c.name}${C.reset}`);
+    // Hereda stdin para que el conector pida la contrasena maestra
+    const r = spawnSync(process.execPath, [join(ROOT, c.cmd[0]), ...c.cmd.slice(1)], {
+      cwd: ROOT, stdio: 'inherit',
+    });
+    if (r.status !== 0) console.log(`    ${C.dim}(no se pudo leer ${c.name})${C.reset}`);
+    console.log('');
+  }
+  if (!any) {
+    console.log(`${C.dim}  Calendar y Gmail no estan conectados aun. Conectalos con:`);
+    console.log(`    node brain/sync/connectors/google-calendar/auth.mjs`);
+    console.log(`    node brain/sync/connectors/gmail/auth.mjs${C.reset}\n`);
+  }
+} else {
+  console.log(`${C.dim}  Para el brief completo con calendario y correo: node brain/brief.mjs --full${C.reset}\n`);
+}

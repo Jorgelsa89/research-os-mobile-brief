@@ -34,6 +34,11 @@ Archivo en `brain/knowledge/daily/[YYYY-MM-DD].md` con resumen del dia.
 ## Proceso
 
 ### Brief matutino ("que hay para hoy"):
+
+**Atajo:** `node brain/brief.mjs --full` compila todo de una (research, watchlist,
+pendientes, Calendar y Gmail en vivo). Sin `--full` da el brief rapido local.
+
+Paso a paso (lo que hace el atajo):
 1. Leer `brain/knowledge/daily/` — buscar nota del dia anterior para contexto y pendientes
 2. **Calendario en vivo:** ejecutar `node brain/sync/connectors/google-calendar/calendar.mjs today` — eventos de hoy (si el conector esta configurado)
 3. **Correo en vivo:** ejecutar `node brain/sync/connectors/gmail/gmail.mjs triage` — correos urgentes y pendientes (si el conector esta configurado)
