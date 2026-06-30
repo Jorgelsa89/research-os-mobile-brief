@@ -1,0 +1,15 @@
+{
+  "name": "axon",
+  "version": "0.1.0",
+  "description": "Axon — tu cerebro digital. Asistente personal local-first con IA.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node axon.mjs",
+    "serve": "node serve.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

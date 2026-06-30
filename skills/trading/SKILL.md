@@ -55,6 +55,25 @@ Gestiono la watchlist de acciones, configuro alertas de precio, evaluo resultado
 2. Evaluar usando el template de backtest
 3. Guardar en `brain/knowledge/trading/backtests/`
 
+## Conector de broker
+
+Puedo leer las **posiciones reales** de la cuenta a traves del conector de broker
+(`brain/sync/connectors/broker/`). Hoy opera en modo `[PAPER]` (posiciones en
+`brain/knowledge/trading/positions.json`) y pasara a `[REAL]` (Schwab/thinkorswim)
+cuando Jorge cargue las API keys. Comandos:
+
+```bash
+node brain/sync/connectors/broker/broker.mjs positions   # posiciones con P/L
+node brain/sync/connectors/broker/broker.mjs balance     # cash, equity, buying power
+node brain/sync/connectors/broker/broker.mjs pnl         # P/L total de la cuenta
+node brain/sync/connectors/broker/broker.mjs add <ticker> <cant> <precio>  # agregar (paper)
+node brain/sync/connectors/broker/broker.mjs close <ticker>                # cerrar (paper)
+```
+
+Uso tipico: cuando Jorge pregunta "como van mis posiciones", ejecuto `positions`
+y/o `pnl` para responder con numeros reales en vez de solo la watchlist estatica.
+Ver `brain/sync/connectors/broker/README.md` para el detalle y el setup de Schwab.
+
 ## Conexiones con otros skills
 
 - **Research:** Cuando se agrega una accion, ofrecer hacer research si no existe nota

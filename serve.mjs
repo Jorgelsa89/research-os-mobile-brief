@@ -3,6 +3,7 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createPublicKey, verify as edVerify } from 'node:crypto';
+import { execFile } from 'node:child_process';
 import { TIERS } from './monetize/tiers.mjs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -181,6 +182,39 @@ function apiLicense() {
   return { tier, email, expires, reason, features: TIERS[tier] || TIERS.free };
 }
 
+/** Genera el brief del dia ejecutando `node brain/brief.mjs --json`.
+ *  Es asincrono (lanza un proceso hijo), por eso recibe `res` y responde
+ *  directamente en el callback. */
+function apiBrief(res) {
+  const briefPath = join(BRAIN, 'brief.mjs');
+  execFile(
+    process.execPath,            // ruta al binario de node actual
+    [briefPath, '--json'],
+    { cwd: __dirname, timeout: 15000, maxBuffer: 4 * 1024 * 1024 },
+    (err, stdout) => {
+      if (err) {
+        res.writeHead(500, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Access-Control-Allow-Origin': '*',
+        });
+        res.end(JSON.stringify({ error: 'No se pudo generar el brief' }));
+        return;
+      }
+      // Validamos que el stdout sea JSON antes de reenviarlo
+      try {
+        const data = JSON.parse(stdout);
+        jsonOk(res, data);
+      } catch {
+        res.writeHead(500, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Access-Control-Allow-Origin': '*',
+        });
+        res.end(JSON.stringify({ error: 'Brief con formato invalido' }));
+      }
+    }
+  );
+}
+
 // ── HTTP server ───────────────────────────────────────────────────────────────
 
 const server = createServer((req, res) => {
@@ -196,6 +230,7 @@ const server = createServer((req, res) => {
   if (url === '/api/brain/daily')     { return jsonOk(res, apiDaily()); }
   if (url === '/api/brain/memory')    { return jsonOk(res, apiMemory()); }
   if (url === '/api/license')         { return jsonOk(res, apiLicense()); }
+  if (url === '/api/brief')           { return apiBrief(res); }
   // Admin: solo localhost (datos de clientes)
   if (url === '/api/admin/sales') {
     const ra = req.socket.remoteAddress || '';

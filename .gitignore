@@ -2,6 +2,7 @@
 .mobile-server.pid
 localtunnel.*.log
 brain/knowledge/email/
+brain/knowledge/trading/positions.json
 brain/identity/*.enc
 brain/memory/short-term/
 brain/sync/connectors/**/client_secret.json

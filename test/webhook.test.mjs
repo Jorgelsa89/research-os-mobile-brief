@@ -1,88 +1,69 @@
-// Test E2E de seguridad del webhook de Stripe
+// Test de seguridad del webhook de Stripe
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createHmac } from 'node:crypto';
 import { existsSync, rmSync, readFileSync } from 'node:fs';
+import { join, resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = '/home/user/research-os-mobile-brief';
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = 'whsec_test_secret_123';
 const PORT = 4299;
+const SALES = join(ROOT, 'monetize', 'sales-log.json');
 
-// limpiar estado previo
-for (const f of ['monetize/sales-log.json','monetize/.processed-sessions.json','monetize/pending-emails.log']) {
-  try { rmSync(`${ROOT}/${f}`); } catch {}
-}
+let srv;
+const cleanFiles = () => {
+  for (const f of ['monetize/sales-log.json', 'monetize/.processed-sessions.json',
+                   'monetize/pending-emails.log', 'brain/identity/license.key']) {
+    try { rmSync(join(ROOT, f)); } catch {}
+  }
+};
 
-const srv = spawn(process.execPath, ['monetize/stripe-webhook.mjs'], {
-  cwd: ROOT,
-  env: { ...process.env, PORT: String(PORT), STRIPE_WEBHOOK_SECRET: SECRET },
-  stdio: 'ignore',
-});
-
-await new Promise(r => setTimeout(r, 800));
-
-function sign(body, ts) {
-  const sig = createHmac('sha256', SECRET).update(`${ts}.${body}`).digest('hex');
-  return `t=${ts},v1=${sig}`;
-}
-
-function post(body, sigHeader) {
-  return fetch(`http://localhost:${PORT}/webhook`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'stripe-signature': sigHeader },
-    body,
+before(async () => {
+  cleanFiles();
+  srv = spawn(process.execPath, ['monetize/stripe-webhook.mjs'], {
+    cwd: ROOT, env: { ...process.env, PORT: String(PORT), STRIPE_WEBHOOK_SECRET: SECRET }, stdio: 'ignore',
   });
-}
+  await new Promise(r => setTimeout(r, 800));
+});
+after(() => { srv?.kill('SIGINT'); cleanFiles(); });
 
-const event = JSON.stringify({
+const sign = (body, ts) => `t=${ts},v1=${createHmac('sha256', SECRET).update(`${ts}.${body}`).digest('hex')}`;
+const post = (body, sig) => fetch(`http://localhost:${PORT}/webhook`, {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'stripe-signature': sig }, body,
+});
+const EVENT = JSON.stringify({
   type: 'checkout.session.completed',
-  data: { object: {
-    id: 'cs_test_123',
-    customer_details: { email: 'webhooktest@cliente.com' },
-    metadata: { tier: 'pro' },
-  } },
+  data: { object: { id: 'cs_test_123', customer_details: { email: 'wh@cliente.com' }, metadata: { tier: 'pro' } } },
 });
 
-let pass = 0, fail = 0;
-const check = (name, cond) => { if (cond) { console.log(`  PASS ${name}`); pass++; } else { console.log(`  FAIL ${name}`); fail++; } };
+test('firma valida responde 200 y emite licencia', async () => {
+  const now = Math.floor(Date.now() / 1000);
+  const r = await post(EVENT, sign(EVENT, now));
+  assert.equal(r.status, 200);
+  await new Promise(res => setTimeout(res, 600));
+  const emitted = existsSync(SALES) && JSON.parse(readFileSync(SALES, 'utf8')).some(s => s.email === 'wh@cliente.com');
+  assert.ok(emitted, 'no se registro la licencia en el CRM');
+});
 
-const now = Math.floor(Date.now() / 1000);
+test('firma falsa es rechazada (400)', async () => {
+  const now = Math.floor(Date.now() / 1000);
+  const r = await post(EVENT, `t=${now},v1=deadbeef`);
+  assert.equal(r.status, 400);
+});
 
-// 1. Firma valida → 200
-const r1 = await post(event, sign(event, now));
-check('firma valida responde 200', r1.status === 200);
+test('timestamp viejo es rechazado (anti-replay)', async () => {
+  const old = Math.floor(Date.now() / 1000) - 600;
+  const r = await post(EVENT, sign(EVENT, old));
+  assert.equal(r.status, 400);
+});
 
-await new Promise(r => setTimeout(r, 600)); // dar tiempo a emitir
-
-// 2. La licencia se emitio (sales-log)
-const salesPath = `${ROOT}/monetize/sales-log.json`;
-const emitted = existsSync(salesPath) && JSON.parse(readFileSync(salesPath,'utf8')).some(s => s.email === 'webhooktest@cliente.com');
-check('licencia emitida y registrada en CRM', emitted);
-
-// 3. La key cayo a pending-emails.log (sin Resend)
-const pending = existsSync(`${ROOT}/monetize/pending-emails.log`) && readFileSync(`${ROOT}/monetize/pending-emails.log`,'utf8').includes('webhooktest@cliente.com');
-check('key guardada en pending-emails.log', pending);
-
-// 4. Firma INVALIDA → 400 (ataque)
-const r2 = await post(event, `t=${now},v1=deadbeef`);
-check('firma falsa rechazada (400)', r2.status === 400);
-
-// 5. Timestamp viejo (replay) → 400
-const old = now - 600; // 10 min
-const r3 = await post(event, sign(event, old));
-check('timestamp viejo rechazado (anti-replay, 400)', r3.status === 400);
-
-// 6. Idempotencia: reenviar misma sesion no duplica
-const before = JSON.parse(readFileSync(salesPath,'utf8')).length;
-await post(event, sign(event, now));
-await new Promise(r => setTimeout(r, 400));
-const after = JSON.parse(readFileSync(salesPath,'utf8')).length;
-check('idempotente: sesion repetida no duplica licencia', before === after);
-
-srv.kill('SIGINT');
-// limpiar
-for (const f of ['monetize/sales-log.json','monetize/.processed-sessions.json','monetize/pending-emails.log','brain/identity/license.key']) {
-  try { rmSync(`${ROOT}/${f}`); } catch {}
-}
-
-console.log(`\n  RESULTADO: ${pass} pass, ${fail} fail`);
-process.exit(fail === 0 ? 0 : 1);
+test('sesion repetida no duplica (idempotencia)', async () => {
+  const now = Math.floor(Date.now() / 1000);
+  const prev = JSON.parse(readFileSync(SALES, 'utf8')).length;
+  await post(EVENT, sign(EVENT, now));
+  await new Promise(res => setTimeout(res, 400));
+  const post2 = JSON.parse(readFileSync(SALES, 'utf8')).length;
+  assert.equal(prev, post2);
+});

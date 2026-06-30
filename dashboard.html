@@ -400,6 +400,106 @@
       letter-spacing: 0.5px;
     }
     #next-refresh { color: var(--axon); }
+
+    /* ── CONTROL POR VOZ ── */
+    /* Boton circular flotante abajo a la derecha */
+    #voice-fab {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 1px solid rgba(87,168,255,0.5);
+      background: radial-gradient(circle at 30% 30%, rgba(87,168,255,0.25), var(--card));
+      color: var(--axon);
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 16px rgba(87,168,255,0.25);
+      transition: transform .15s, box-shadow .2s, background .2s;
+    }
+    #voice-fab:hover { transform: scale(1.06); box-shadow: 0 4px 22px rgba(0,0,0,0.55), 0 0 22px rgba(87,168,255,0.45); }
+    #voice-fab:active { transform: scale(0.96); }
+    /* Estado grabando: pulso rojo */
+    #voice-fab.listening {
+      color: #fff;
+      border-color: rgba(255,71,87,0.7);
+      background: radial-gradient(circle at 30% 30%, rgba(255,71,87,0.35), var(--card));
+      animation: voicePulse 1.2s ease-in-out infinite;
+    }
+    @keyframes voicePulse {
+      0%   { box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 0 0 rgba(255,71,87,0.5); }
+      70%  { box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 0 14px rgba(255,71,87,0); }
+      100% { box-shadow: 0 4px 18px rgba(0,0,0,0.5), 0 0 0 0 rgba(255,71,87,0); }
+    }
+    /* Estado deshabilitado (navegador sin soporte) */
+    #voice-fab.unsupported {
+      color: var(--muted);
+      border-color: var(--border);
+      background: var(--card);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    /* Estado hablando (TTS): borde cyan */
+    #voice-fab.speaking { color: var(--cyan); border-color: rgba(78,205,196,0.6); }
+
+    /* Panel/toast de transcripcion encima del boton */
+    #voice-panel {
+      position: fixed;
+      right: 24px;
+      bottom: 96px;
+      width: 300px;
+      max-width: calc(100vw - 48px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      z-index: 200;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+    }
+    #voice-panel.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    #voice-panel .vp-status {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--axon);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #voice-panel .vp-status .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--axon); box-shadow: 0 0 5px var(--axon);
+    }
+    #voice-panel.is-listening .vp-status { color: var(--red); }
+    #voice-panel.is-listening .vp-status .dot { background: var(--red); box-shadow: 0 0 5px var(--red); }
+    #voice-panel .vp-transcript {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 16px;
+      word-break: break-word;
+    }
+    #voice-panel .vp-response {
+      font-size: 11px;
+      color: var(--cyan);
+      line-height: 1.5;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      word-break: break-word;
+    }
+    #voice-panel .vp-response:empty { display: none; }
   </style>
 </head>
 <body>
@@ -510,6 +610,14 @@
   </div>
 
 </main>
+
+<!-- ── Control por voz: panel de transcripcion + boton flotante ── -->
+<div id="voice-panel">
+  <div class="vp-status"><span class="dot"></span><span id="vp-status-text">Voz lista</span></div>
+  <div class="vp-transcript" id="vp-transcript">Toca el microfono y habla.</div>
+  <div class="vp-response" id="vp-response"></div>
+</div>
+<button id="voice-fab" title="Control por voz" aria-label="Control por voz">🎤</button>
 
 <script>
 // ── Clock ──────────────────────────────────────────────────────────────────
@@ -861,6 +969,242 @@ async function loadLicense() {
     return true;
   } catch { return false; }
 }
+
+// ── CONTROL POR VOZ (Web Speech API) ───────────────────────────────────────
+// Reconocimiento (STT) + sintesis (TTS) nativos del navegador. Sin dependencias.
+
+(function initVoice() {
+  const fab        = document.getElementById('voice-fab');
+  const panel      = document.getElementById('voice-panel');
+  const elStatus   = document.getElementById('vp-status-text');
+  const elTrans    = document.getElementById('vp-transcript');
+  const elResponse = document.getElementById('vp-response');
+
+  // ── Deteccion de soporte ──
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const hasTTS    = 'speechSynthesis' in window;
+
+  // Muestra el panel flotante con un texto de estado y transcripcion.
+  function showPanel({ status, transcript, response, listening }) {
+    panel.classList.add('show');
+    panel.classList.toggle('is-listening', !!listening);
+    if (status !== undefined)     elStatus.textContent = status;
+    if (transcript !== undefined) elTrans.textContent = transcript;
+    if (response !== undefined)   elResponse.textContent = response || '';
+  }
+  // Oculta el panel tras un retraso (para que el usuario alcance a leer).
+  let hideTimer = null;
+  function autoHide(ms = 6000) {
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => panel.classList.remove('show'), ms);
+  }
+
+  // ── Sintesis de voz (Text-to-Speech) ──
+  // Lee 'texto' en voz alta en espanol. Funcion expuesta como speak().
+  function speak(texto) {
+    if (!hasTTS || !texto) return;
+    try {
+      window.speechSynthesis.cancel(); // corta cualquier locucion previa
+      const u = new SpeechSynthesisUtterance(texto);
+      u.lang = 'es-ES';
+      u.rate = 1.0;
+      u.pitch = 1.0;
+      // Intenta elegir una voz espanola si esta disponible
+      const voces = window.speechSynthesis.getVoices();
+      const vozEs = voces.find(v => /es[-_]/i.test(v.lang));
+      if (vozEs) u.voice = vozEs;
+      u.onstart = () => fab.classList.add('speaking');
+      u.onend   = () => fab.classList.remove('speaking');
+      u.onerror = () => fab.classList.remove('speaking');
+      window.speechSynthesis.speak(u);
+    } catch { /* TTS no critico: degrada en silencio */ }
+  }
+  // Exponer speak() globalmente por si se quiere reutilizar.
+  window.speak = speak;
+
+  // ── Si el navegador NO soporta reconocimiento de voz ──
+  if (!SpeechRec) {
+    fab.classList.add('unsupported');
+    fab.title = 'Tu navegador no soporta voz';
+    fab.addEventListener('click', () => {
+      showPanel({
+        status: 'No disponible',
+        transcript: 'Tu navegador no soporta reconocimiento de voz.',
+        response: '',
+      });
+      autoHide();
+    });
+    return; // no configuramos STT, pero la pagina sigue funcionando
+  }
+
+  // ── Configuracion del reconocimiento de voz (Speech-to-Text) ──
+  const recognition = new SpeechRec();
+  recognition.lang = 'es-ES';
+  recognition.continuous = false;     // una frase por activacion
+  recognition.interimResults = true;  // muestra texto parcial mientras habla
+  recognition.maxAlternatives = 1;
+
+  let listening = false;
+
+  recognition.onstart = () => {
+    listening = true;
+    fab.classList.add('listening');
+    showPanel({ status: 'Escuchando...', transcript: '', response: '', listening: true });
+    clearTimeout(hideTimer);
+  };
+
+  recognition.onresult = (event) => {
+    // Concatena los resultados (parciales + finales)
+    let texto = '';
+    let esFinal = false;
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      texto += event.results[i][0].transcript;
+      if (event.results[i].isFinal) esFinal = true;
+    }
+    texto = texto.trim();
+    showPanel({ transcript: texto || 'Escuchando...', listening: true });
+    if (esFinal) procesarComando(texto);
+  };
+
+  recognition.onerror = (event) => {
+    listening = false;
+    fab.classList.remove('listening');
+    const noVoz = event.error === 'no-speech';
+    const denegado = event.error === 'not-allowed' || event.error === 'service-not-allowed';
+    const msg = denegado
+      ? 'Permiso de microfono denegado.'
+      : noVoz
+        ? 'No escuche nada. Intenta de nuevo.'
+        : 'Error de reconocimiento de voz.';
+    showPanel({ status: 'Voz lista', transcript: msg, response: '', listening: false });
+    autoHide();
+  };
+
+  recognition.onend = () => {
+    listening = false;
+    fab.classList.remove('listening');
+  };
+
+  // ── Activacion / desactivacion al hacer click en el boton ──
+  fab.addEventListener('click', () => {
+    if (listening) {
+      try { recognition.stop(); } catch {}
+      return;
+    }
+    // En algunos navegadores getVoices() se llena tarde: forzamos una llamada.
+    if (hasTTS) window.speechSynthesis.getVoices();
+    try {
+      recognition.start();
+    } catch {
+      // start() lanza si ya esta activo; lo ignoramos.
+    }
+  });
+
+  // ── Interpretacion de comandos de voz ──
+  // Normaliza: minusculas y sin acentos para comparar de forma robusta.
+  function normalizar(s) {
+    return (s || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '');
+  }
+
+  function procesarComando(textoOriginal) {
+    const t = normalizar(textoOriginal);
+    if (!t) return;
+
+    // Comando: BRIEF del dia
+    if (t.includes('brief') || t.includes('que hay para hoy') ||
+        t.includes('buenos dias') || t.includes('resumen del dia')) {
+      comandoBrief(textoOriginal);
+      return;
+    }
+    // Comando: ACTUALIZAR / refrescar
+    if (t.includes('actualiza') || t.includes('refresca') || t.includes('refrescar')) {
+      const r = 'Actualizando el dashboard.';
+      showPanel({ status: 'Voz lista', transcript: textoOriginal, response: r });
+      speak(r);
+      refreshAll();
+      autoHide();
+      return;
+    }
+    // Comando: RESEARCH / investigacion -> scroll y lectura
+    if (t.includes('research') || t.includes('investigacion') || t.includes('investiga')) {
+      comandoLeerResearch(textoOriginal);
+      return;
+    }
+    // Comando: WATCHLIST -> scroll
+    if (t.includes('watchlist') || t.includes('watch list') || t.includes('lista de seguimiento')) {
+      const panelWl = document.getElementById('wl-table').closest('.panel');
+      if (panelWl) panelWl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const r = 'Aqui esta tu watchlist.';
+      showPanel({ status: 'Voz lista', transcript: textoOriginal, response: r });
+      speak(r);
+      autoHide();
+      return;
+    }
+    // No reconocido
+    const r = 'No entendi ese comando.';
+    showPanel({ status: 'Voz lista', transcript: textoOriginal, response: r });
+    speak(r);
+    autoHide();
+  }
+
+  // ── Comando BRIEF: pide /api/brief y lo lee en voz alta ──
+  async function comandoBrief(textoOriginal) {
+    showPanel({ status: 'Cargando brief...', transcript: textoOriginal, response: 'Generando brief del dia...' });
+    try {
+      const resp = await fetch('/api/brief');
+      if (!resp.ok) throw new Error('http');
+      const data = await resp.json();
+
+      const research = Array.isArray(data.research) ? data.research : [];
+      const n = research.length;
+      let mensaje;
+      if (n > 0) {
+        // Ordena por score descendente para encontrar la mas importante
+        const top = research
+          .slice()
+          .sort((a, b) => (parseFloat(b.score) || 0) - (parseFloat(a.score) || 0))[0];
+        const titulo = top.titulo || top.title || 'sin titulo';
+        const score = top.score != null ? top.score : 'sin score';
+        mensaje = `Buenos dias. Tienes ${n} ${n === 1 ? 'investigacion reciente' : 'investigaciones recientes'}. ` +
+                  `La mas importante: ${titulo}, con score ${score}.`;
+      } else {
+        mensaje = 'Buenos dias. No tienes investigaciones recientes en el brief de hoy.';
+      }
+      showPanel({ status: 'Voz lista', transcript: textoOriginal, response: mensaje });
+      speak(mensaje);
+      autoHide(9000);
+    } catch {
+      // Degrada limpio si el endpoint falla
+      const r = 'No pude cargar el brief.';
+      showPanel({ status: 'Voz lista', transcript: textoOriginal, response: r });
+      speak(r);
+      autoHide();
+    }
+  }
+
+  // ── Comando RESEARCH: scroll al panel y lee los titulos visibles ──
+  function comandoLeerResearch(textoOriginal) {
+    const panelRes = document.getElementById('research-list').closest('.panel');
+    if (panelRes) panelRes.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Lee los titulos de las notas de research que ya estan en el DOM
+    const titulos = Array.from(document.querySelectorAll('#research-list .research-title'))
+      .map(el => el.textContent.trim())
+      .filter(Boolean)
+      .slice(0, 3);
+    let r;
+    if (titulos.length) {
+      r = `Research reciente. ${titulos.map((tt, i) => `${i + 1}. ${tt}`).join('. ')}.`;
+    } else {
+      r = 'No hay notas de research recientes.';
+    }
+    showPanel({ status: 'Voz lista', transcript: textoOriginal, response: r });
+    speak(r);
+    autoHide(9000);
+  }
+})();
 
 // ── Init ──────────────────────────────────────────────────────────────────
 
