@@ -98,7 +98,21 @@ for (const c of connectors) {
   else { warn(`${c.name} sin conectar`); pending.push(c); }
 }
 
-// 4. Contar el cerebro
+// 4. Plan / licencia
+let tier = 'free';
+if (existsSync(join(ROOT, 'monetize', 'license.mjs'))) {
+  try {
+    const out = run('node monetize/license.mjs status');
+    tier = (JSON.parse(out).tier) || 'free';
+  } catch { /* sin licencia → free */ }
+}
+if (tier === 'free') {
+  warn(`Plan: FREE — 3 skills (research, trading, daily). Pro desbloquea los 12 + conectores.`);
+} else {
+  ok(`Plan: ${tier.toUpperCase()} — todo desbloqueado`);
+}
+
+// 5. Contar el cerebro
 try {
   const count = run('git ls-files brain/knowledge | grep -c ".md$" || true', { stdio: ['pipe','pipe','ignore'] });
   if (count) info(`${count} notas en el cerebro`);
