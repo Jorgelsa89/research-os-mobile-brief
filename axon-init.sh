@@ -5,6 +5,30 @@
 
 set -e
 
+# ─── Ubicacion de los assets de Axon ────────────────────────────────────────────
+# El instalador necesita copiar skills, launcher y conectores al nuevo brain.
+# Si se corre desde el repo clonado, los assets estan junto al script.
+# Si se corre standalone (via curl), se clona el repo a una carpeta temporal.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+AXON_REPO="https://github.com/jorgelsa89/research-os-mobile-brief.git"
+SOURCE_DIR=""
+TEMP_CLONE=""
+
+resolve_source() {
+  if [ -f "$SCRIPT_DIR/skills/research/SKILL.md" ]; then
+    SOURCE_DIR="$SCRIPT_DIR"
+  else
+    TEMP_CLONE="$(mktemp -d)"
+    if git clone -q --depth 1 "$AXON_REPO" "$TEMP_CLONE" 2>/dev/null; then
+      SOURCE_DIR="$TEMP_CLONE"
+    else
+      SOURCE_DIR=""  # sin fuente: se crea brain vacio (modo degradado)
+    fi
+  fi
+}
+cleanup_source() { [ -n "$TEMP_CLONE" ] && rm -rf "$TEMP_CLONE"; return 0; }
+trap cleanup_source EXIT
+
 # ─── Colores ───────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -157,6 +181,46 @@ for dir in brain/knowledge/*/; do
 done
 
 echo -e "${GREEN}✓ Estructura creada${NC}"
+
+# ─── Copiar los assets de Axon (skills, launcher, conectores) ──────────────────
+resolve_source
+if [ -n "$SOURCE_DIR" ]; then
+  # Skills activados por el usuario (solo los que eligio)
+  for key in "${!SKILLS[@]}"; do
+    if [ -d "$SOURCE_DIR/skills/$key" ]; then
+      cp -R "$SOURCE_DIR/skills/$key" "skills/$key"
+    fi
+  done
+  # Meta-skills siempre incluidos: crear skills y entrenar
+  for meta in _TEMPLATE skill-creator trainer; do
+    [ -d "$SOURCE_DIR/skills/$meta" ] && cp -R "$SOURCE_DIR/skills/$meta" "skills/$meta"
+  done
+  # Motor del cerebro: encriptacion, brief, launcher, dashboard
+  [ -f "$SOURCE_DIR/brain/security/crypto.mjs" ] && cp "$SOURCE_DIR/brain/security/crypto.mjs" "brain/security/crypto.mjs"
+  [ -f "$SOURCE_DIR/brain/brief.mjs" ] && cp "$SOURCE_DIR/brain/brief.mjs" "brain/brief.mjs"
+  [ -f "$SOURCE_DIR/axon.mjs" ] && cp "$SOURCE_DIR/axon.mjs" "axon.mjs"
+  [ -f "$SOURCE_DIR/serve.mjs" ] && cp "$SOURCE_DIR/serve.mjs" "serve.mjs"
+  [ -f "$SOURCE_DIR/dashboard.html" ] && cp "$SOURCE_DIR/dashboard.html" "dashboard.html"
+  [ -f "$SOURCE_DIR/Axon.bat" ] && cp "$SOURCE_DIR/Axon.bat" "Axon.bat"
+  [ -f "$SOURCE_DIR/Axon.command" ] && cp "$SOURCE_DIR/Axon.command" "Axon.command" && chmod +x "Axon.command"
+  [ -f "$SOURCE_DIR/BRAIN-PROTOCOL.md" ] && cp "$SOURCE_DIR/BRAIN-PROTOCOL.md" "BRAIN-PROTOCOL.md"
+  # Conectores (sin tokens — el usuario los autoriza con su propia cuenta)
+  if [ -d "$SOURCE_DIR/brain/sync/connectors" ]; then
+    mkdir -p brain/sync/connectors
+    for conn in "$SOURCE_DIR"/brain/sync/connectors/*/; do
+      [ -d "$conn" ] || continue
+      name="$(basename "$conn")"
+      mkdir -p "brain/sync/connectors/$name"
+      for f in "$conn"*.mjs "$conn"README.md; do
+        [ -f "$f" ] && cp "$f" "brain/sync/connectors/$name/"
+      done
+    done
+  fi
+  echo -e "${GREEN}✓ Skills y motor copiados (${#SKILLS[@]} dominios + meta-skills)${NC}"
+else
+  echo -e "${YELLOW}⚠ No pude obtener los skills de Axon (sin internet). Brain creado vacio.${NC}"
+  echo -e "${YELLOW}  Clona el repo manualmente para traer los skills: ${AXON_REPO}${NC}"
+fi
 
 # ─── Generar CLAUDE.md personalizado ──────────────────────────────────────────
 TODAY=$(date +%Y-%m-%d)
@@ -342,6 +406,9 @@ cat > .gitignore << EOF
 brain/identity/*.enc
 brain/memory/short-term/
 brain/knowledge/email/
+brain/sync/connectors/**/client_secret.json
+brain/sync/connectors/**/.tokens_temp.json
+brain/sync/connectors/**/tokens.enc
 .DS_Store
 node_modules/
 *.log
@@ -358,6 +425,9 @@ echo -e "${GREEN}${BOLD}✓ Tu brain está listo en: $(pwd)${NC}"
 echo -e "${CYAN}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo -e "${BOLD}Proximos pasos:${NC}"
+echo ""
+echo -e "  0. ${CYAN}Arranca Axon (un solo paso):${NC}"
+echo -e "     ${YELLOW}node axon.mjs${NC}   ${CYAN}(o doble-click en Axon.bat / Axon.command)${NC}"
 echo ""
 echo -e "  1. ${CYAN}Abre este directorio en Claude Code:${NC}"
 echo -e "     ${YELLOW}claude$(pwd | xargs -I{} echo " --project {}")${NC}"

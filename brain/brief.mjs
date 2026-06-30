@@ -81,11 +81,19 @@ if (AS_JSON) {
   process.exit(0);
 }
 
+// Nombre del dueño (desde shared-context.md, para que funcione para cualquier persona)
+let owner = 'Jorge';
+const ctxPath = join(ROOT, 'brain', 'sync', 'shared-context.md');
+if (existsSync(ctxPath)) {
+  const m = readFileSync(ctxPath, 'utf8').match(/owner:\s*["']?([^"'\n]+)["']?/);
+  if (m) owner = m[1].trim();
+}
+
 // --- Render bonito ---
 const hora = new Date().getHours();
 const saludo = hora < 12 ? 'Buenos dias' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
 
-console.log(`\n${C.blue}${C.bold}  ${saludo}, Jorge.${C.reset} ${C.dim}Esto es lo que tienes:${C.reset}\n`);
+console.log(`\n${C.blue}${C.bold}  ${saludo}, ${owner}.${C.reset} ${C.dim}Esto es lo que tienes:${C.reset}\n`);
 
 if (brief.research.length) {
   console.log(`${C.bold}  📊 Research reciente${C.reset}`);

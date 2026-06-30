@@ -128,3 +128,36 @@ el launcher los detecte automaticamente.
 - Onboarding de Paola + 5 beta users con el nuevo flujo de un click
 
 ---
+
+## 2026-06-30 CLAUDE
+
+**Tarea:** Auto-brief + instalador que entrega producto funcional (no cascaron)
+
+**Resultado:**
+- **`brain/brief.mjs`**: auto-brief que compila tu dia desde el cerebro sin pedir
+  contrasena (research, watchlist, pendientes). Lee el nombre del dueño de
+  shared-context.md → funciona para cualquier persona, no solo Jorge.
+- **`axon.mjs`**: ahora muestra el auto-brief al arrancar. Doble-click = tu dia.
+- **`axon-init.sh` ARREGLADO (bug critico de producto):** antes creaba un brain con
+  carpetas VACIAS — sin skills, sin launcher, sin crypto. Un usuario nuevo recibia
+  un cascaron inutil. Ahora copia: skills activados + meta-skills (skill-creator,
+  trainer, _TEMPLATE) + axon.mjs + brief.mjs + crypto.mjs + serve.mjs + dashboard +
+  Axon.bat/.command + conectores (sin tokens). Detecta su fuente (repo local o
+  git clone temporal en modo curl). Arreglado tambien el exit code 1 del trap.
+- **PROBADO end-to-end:** instale un brain de "MariaTest" desde cero, EXIT 0, y el
+  usuario nuevo pudo correr `node axon.mjs` con skills reales operativos.
+
+**Por que:** El goal exige que "cualquier persona" tenga un cerebro que actue por
+ella. El instalador roto entregaba carpetas vacias — el camino de cualquier persona
+estaba roto. Ahora entrega un producto funcional desde el minuto cero.
+
+**Para CODEX:**
+El instalador oficial copia assets desde el repo. Si agregas un skill o conector
+nuevo al repo, el instalador lo incluira automaticamente (skills activados por el
+usuario + todo lo de skills/_TEMPLATE, skill-creator, trainer).
+
+**Proximo paso sugerido:**
+- Onboarding real de Paola con el instalador arreglado
+- Monetizacion: empaquetar el dashboard como producto
+
+---
