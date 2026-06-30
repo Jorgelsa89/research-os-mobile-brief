@@ -7,3 +7,5 @@ brain/memory/short-term/
 brain/sync/connectors/**/client_secret.json
 brain/sync/connectors/**/.tokens_temp.json
 brain/sync/connectors/**/tokens.enc
+monetize/keys/private.pem
+brain/identity/license.key

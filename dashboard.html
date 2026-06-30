@@ -28,6 +28,30 @@
       line-height: 1.5;
       min-height: 100vh;
     }
+    /* Tier badge + upgrade banner (monetizacion) */
+    #tier-badge {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      padding: 3px 9px; border-radius: 5px; text-decoration: none;
+      background: rgba(125,133,144,0.15); color: var(--muted);
+      border: 1px solid var(--border); transition: 0.2s;
+    }
+    #tier-badge:hover { opacity: 0.8; }
+    #tier-badge.tier-pro, #tier-badge.tier-team, #tier-badge.tier-enterprise {
+      background: rgba(87,168,255,0.15); color: var(--axon);
+      border-color: rgba(87,168,255,0.4);
+    }
+    #upgrade-banner {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      flex-wrap: wrap; padding: 10px 16px; margin: 0;
+      background: linear-gradient(90deg, rgba(87,168,255,0.08), rgba(168,85,247,0.08));
+      border-bottom: 1px solid rgba(87,168,255,0.2);
+      font-size: 13px; color: var(--text);
+    }
+    #upgrade-banner b { color: var(--axon); }
+    #upgrade-banner a {
+      color: var(--axon); text-decoration: none; font-weight: 700; white-space: nowrap;
+    }
+    #upgrade-banner a:hover { text-decoration: underline; }
 
     /* ── HEADER ── */
     header {
@@ -392,11 +416,17 @@
     <a href="brain.html">Brain</a>
   </div>
   <div class="header-right">
+    <a id="tier-badge" href="pricing.html" title="Tu plan">FREE</a>
     <span class="refresh-info">Actualiza en <span id="next-refresh">60</span>s</span>
     <span id="clock"></span>
     <button class="btn-refresh" onclick="refreshAll()">ACTUALIZAR</button>
   </div>
 </header>
+
+<div id="upgrade-banner" style="display:none;">
+  <span>Estas en el plan <b>Free</b> (3 skills). Desbloquea los 12 skills, conectores y auto-brief con <b>Pro</b>.</span>
+  <a href="pricing.html">Ver planes →</a>
+</div>
 
 <main>
 
@@ -804,6 +834,7 @@ async function refreshAll() {
       loadDaily(),
       loadSkills(),
       loadMemory(),
+      loadLicense(),
     ]);
     setStatus(ok.every(Boolean));
   } catch {
@@ -812,6 +843,22 @@ async function refreshAll() {
     btn.textContent = 'ACTUALIZAR';
     btn.disabled = false;
   }
+}
+
+async function loadLicense() {
+  try {
+    const r = await fetch('/api/license');
+    const data = await r.json();
+    const badge = document.getElementById('tier-badge');
+    const banner = document.getElementById('upgrade-banner');
+    const tier = (data.tier || 'free').toUpperCase();
+    badge.textContent = tier;
+    badge.className = 'tier-' + (data.tier || 'free');
+    badge.href = 'pricing.html';
+    // Banner de upgrade solo para usuarios free
+    banner.style.display = (data.tier === 'free') ? 'flex' : 'none';
+    return true;
+  } catch { return false; }
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────

@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Axon — Precios</title>
+<!--
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  NOTA PARA JORGE                                                      │
+  │  Reemplaza los placeholders de Stripe antes de publicar:             │
+  │    - href="STRIPE_PAYMENT_LINK_PRO"   → tu Stripe Payment Link (Pro)  │
+  │    - href="STRIPE_PAYMENT_LINK_TEAM"  → tu Stripe Payment Link (Team) │
+  │  Crea los links en https://dashboard.stripe.com/payment-links        │
+  └─────────────────────────────────────────────────────────────────────┘
+-->
+<style>
+  :root {
+    --bg: #090c10;
+    --surface: #0f1318;
+    --card: #11171d;
+    --border: rgba(255,255,255,0.07);
+    --line: #27343f;
+    --text: #e8eaed;
+    --muted: #7d8590;
+    --axon: #57a8ff;
+    --cyan: #4ecdc4;
+    --green: #00d4a0;
+    --amber: #f5a623;
+    --red: #ff4757;
+    --purple: #a855f7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .mono { font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace; }
+  a { color: inherit; }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(9,12,16,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .nav-logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: var(--axon);
+    text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .btn-primary {
+    background: var(--axon);
+    color: #000;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    display: inline-block;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+
+  /* ── HERO ── */
+  .hero {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 90px 40px 40px;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(87,168,255,0.08);
+    border: 1px solid rgba(87,168,255,0.25);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--axon);
+    margin-bottom: 32px;
+  }
+  .hero-badge::before { content: '●'; color: var(--green); }
+  h1 {
+    font-size: clamp(34px, 5.5vw, 60px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    margin-bottom: 22px;
+  }
+  h1 span { color: var(--axon); }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 580px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ── PRICING GRID ── */
+  .pricing {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 56px 40px 40px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+  .tier {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .tier:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.16); }
+  .tier.popular {
+    border-color: var(--axon);
+    box-shadow: 0 0 0 1px var(--axon), 0 0 40px rgba(87,168,255,0.18);
+    background: linear-gradient(180deg, rgba(87,168,255,0.06), var(--card) 60%);
+  }
+  .tier-tag {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--axon);
+    color: #000;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .tier-name {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--axon);
+    margin-bottom: 14px;
+  }
+  .tier-price {
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .tier-price .per { font-size: 14px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+  .tier-for {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 10px 0 22px;
+    min-height: 38px;
+  }
+  .tier-for strong { color: var(--text); font-weight: 700; }
+  .tier .cta {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-decoration: none;
+    cursor: pointer;
+    margin-bottom: 24px;
+    transition: opacity 0.2s, background 0.2s, border-color 0.2s;
+  }
+  .cta-fill { background: var(--axon); color: #000; }
+  .cta-fill:hover { opacity: 0.85; }
+  .cta-ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+  .cta-ghost:hover { border-color: var(--axon); background: rgba(87,168,255,0.06); }
+  .features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    margin-top: auto;
+  }
+  .features li {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .features li::before {
+    content: '✓';
+    color: var(--green);
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .features li.inherit { color: var(--muted); }
+  .features li.inherit::before { content: '↑'; color: var(--axon); }
+
+  /* ── LICENSE SECTION ── */
+  .license {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 40px;
+  }
+  .license-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--axon);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .license h2 {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .license p { color: var(--muted); font-size: 15px; margin-bottom: 16px; }
+  .license-steps { list-style: none; display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+  .license-steps li { display: flex; gap: 12px; font-size: 14px; }
+  .step-num {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(87,168,255,0.12);
+    border: 1px solid rgba(87,168,255,0.35);
+    color: var(--axon);
+    font-size: 12px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .terminal {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .terminal-bar {
+    background: rgba(255,255,255,0.04);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .terminal-title { flex: 1; text-align: center; font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+  .terminal-body { padding: 20px; font-size: 12.5px; line-height: 1.9; }
+  .t-prompt { color: var(--axon); }
+  .t-cmd { color: var(--text); }
+  .t-out { color: var(--green); }
+  .t-muted { color: var(--muted); }
+  .t-label { color: var(--amber); font-weight: 700; }
+
+  /* ── TRUST STRIP ── */
+  .trust {
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    padding: 0 40px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .trust-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    text-align: center;
+  }
+  .trust-item .big { font-size: 22px; font-weight: 900; color: var(--axon); letter-spacing: -1px; }
+  .trust-item .small { font-size: 12px; color: var(--muted); margin-top: 6px; letter-spacing: 0.5px; }
+
+  /* ── FAQ ── */
+  .faq {
+    max-width: 760px;
+    margin: 40px auto;
+    padding: 0 40px;
+  }
+  .faq h2 {
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .faq-item {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--card);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .faq-item summary {
+    padding: 18px 22px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: color 0.2s;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary:hover { color: var(--axon); }
+  .faq-item summary::after {
+    content: '+';
+    color: var(--axon);
+    font-size: 22px;
+    font-weight: 400;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .faq-item[open] summary::after { transform: rotate(45deg); }
+  .faq-item .answer {
+    padding: 0 22px 20px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .faq-item .answer code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 12px;
+    color: var(--cyan);
+  }
+
+  /* ── FINAL CTA ── */
+  .final {
+    max-width: 760px;
+    margin: 70px auto 40px;
+    padding: 50px 40px;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(87,168,255,0.07), var(--card));
+  }
+  .final h2 { font-size: 30px; font-weight: 900; letter-spacing: -1px; margin-bottom: 14px; }
+  .final p { color: var(--muted); margin-bottom: 28px; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  footer .nav-logo { font-size: 14px; }
+  footer a { color: var(--muted); text-decoration: none; margin-left: 20px; transition: color 0.2s; }
+  footer a:hover { color: var(--text); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1040px) {
+    .pricing { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 880px) {
+    .license-card { grid-template-columns: 1fr; gap: 28px; }
+    .trust { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    nav { padding: 16px 18px; }
+    .nav-links a:not(.btn-primary) { display: none; }
+    .hero { padding: 60px 20px 20px; }
+    .pricing { grid-template-columns: 1fr; padding: 48px 18px 20px; }
+    .license, .faq, .trust { padding-left: 18px; padding-right: 18px; }
+    .license-card { padding: 28px 22px; }
+    footer { flex-direction: column; text-align: center; }
+    footer a { margin: 0 10px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a href="axon.html" class="nav-logo">AXON</a>
+    <div class="nav-links">
+      <a href="axon.html">Producto</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="pricing.html" style="color:var(--text)">Precios</a>
+      <a href="axon.html#install" class="btn-primary">Empezar gratis</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <header class="hero">
+    <div class="hero-badge">PERSONAL AI OS · LOCAL-FIRST</div>
+    <h1>Tu segundo cerebro,<br>a un precio que <span>tiene sentido</span>.</h1>
+    <p class="hero-sub">
+      Axon vive en tu maquina, no en nuestros servidores. Pagas una vez,
+      activas tu licencia firmada y funciona offline para siempre.
+      Sin suscripciones espiandote, sin datos en la nube ajena.
+    </p>
+  </header>
+
+  <!-- ── PRICING ── -->
+  <section class="pricing">
+
+    <!-- FREE -->
+    <div class="tier">
+      <div class="tier-name">Free</div>
+      <div class="tier-price">$0</div>
+      <div class="tier-for">Para <strong>empezar</strong> y probar el cerebro digital sin pagar nada.</div>
+      <a href="axon.html#install" class="cta cta-ghost">Empezar gratis</a>
+      <ul class="features">
+        <li>3 skills core: research, trading, daily</li>
+        <li>Dashboard basico</li>
+        <li>100% local en tu maquina</li>
+        <li>1 usuario</li>
+      </ul>
+    </div>
+
+    <!-- PRO (popular) -->
+    <div class="tier popular">
+      <div class="tier-tag">Mas popular</div>
+      <div class="tier-name">Pro</div>
+      <div class="tier-price">$29<span class="per">/mes</span></div>
+      <div class="tier-for">Para <strong>power users</strong> que quieren el sistema completo.</div>
+      <!-- TODO Jorge: reemplaza STRIPE_PAYMENT_LINK_PRO con tu Stripe Payment Link real -->
+      <a href="STRIPE_PAYMENT_LINK_PRO" class="cta cta-fill">Suscribirse</a>
+      <ul class="features">
+        <li>Los 12 skills completos</li>
+        <li>Conectores: Google Calendar + Gmail</li>
+        <li>Auto-brief al arrancar</li>
+        <li>Skill-creator + trainer (crea y entrena skills)</li>
+        <li>Dashboard completo</li>
+        <li>Soporte prioritario</li>
+      </ul>
+    </div>
+
+    <!-- TEAM -->
+    <div class="tier">
+      <div class="tier-name">Team</div>
+      <div class="tier-price">$19<span class="per">/usuario/mes</span></div>
+      <div class="tier-for">Para <strong>equipos</strong> con un cerebro compartido.</div>
+      <!-- TODO Jorge: reemplaza STRIPE_PAYMENT_LINK_TEAM con tu Stripe Payment Link real -->
+      <a href="STRIPE_PAYMENT_LINK_TEAM" class="cta cta-fill">Suscribirse</a>
+      <ul class="features">
+        <li class="inherit">Todo lo de Pro</li>
+        <li>Multi-usuario</li>
+        <li>Brain compartido</li>
+        <li>Comunicacion entre IAs (Claude ↔ Codex)</li>
+        <li>Roles y permisos</li>
+      </ul>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div class="tier">
+      <div class="tier-name">Enterprise</div>
+      <div class="tier-price">Custom</div>
+      <div class="tier-for">Para <strong>empresas</strong> con necesidades a medida.</div>
+      <a href="mailto:jlmanga22@gmail.com?subject=Axon%20Enterprise" class="cta cta-ghost">Contactar</a>
+      <ul class="features">
+        <li class="inherit">Todo lo de Team</li>
+        <li>Verticales a medida</li>
+        <li>Fine-tuning de modelos</li>
+        <li>Despliegue on-premise</li>
+        <li>SLA garantizado</li>
+        <li>Onboarding dedicado</li>
+      </ul>
+    </div>
+
+  </section>
+
+  <!-- ── TRUST STRIP ── -->
+  <section class="trust">
+    <div class="trust-item">
+      <div class="big">100% local</div>
+      <div class="small">Tus datos nunca salen de tu disco</div>
+    </div>
+    <div class="trust-item">
+      <div class="big">Offline forever</div>
+      <div class="small">Licencia firmada, sin servidor de activacion</div>
+    </div>
+    <div class="trust-item">
+      <div class="big">Cancela cuando quieras</div>
+      <div class="small">Sin lock-in, tu brain es tuyo</div>
+    </div>
+  </section>
+
+  <!-- ── LICENSE MODEL ── -->
+  <section class="license">
+    <div class="license-card">
+      <div>
+        <div class="section-label">Modelo de licencia · Local-first</div>
+        <h2>Pagas una vez. Funciona offline para siempre.</h2>
+        <p>
+          Nada de "tu sesion expiro porque nuestro servidor se cayo".
+          Cuando compras, recibes una <strong>license key firmada
+          criptograficamente</strong>. La activas una sola vez en tu maquina
+          y Axon verifica la firma localmente — sin llamar a casa, sin telemetria.
+        </p>
+        <ul class="license-steps">
+          <li><span class="step-num">1</span><div>Compras tu plan y recibes tu license key firmada por correo.</div></li>
+          <li><span class="step-num">2</span><div>La activas con un comando. Axon valida la firma offline.</div></li>
+          <li><span class="step-num">3</span><div>Listo. Tu cerebro digital corre en local, para siempre. Ningun servidor te vigila.</div></li>
+        </ul>
+      </div>
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          <span class="terminal-title">axon — activar licencia</span>
+        </div>
+        <div class="terminal-body mono">
+          <div><span class="t-prompt">$</span> <span class="t-cmd">node monetize/license.mjs activate "AXON-PRO-…"</span></div>
+          <div><span class="t-muted">› verificando firma criptografica…</span></div>
+          <div><span class="t-out">✓ firma valida</span></div>
+          <div><span class="t-out">✓ licencia activada</span> <span class="t-label">[ PRO ]</span></div>
+          <div><span class="t-muted">› 12 skills desbloqueados</span></div>
+          <div><span class="t-muted">› modo offline: permanente</span></div>
+          <div>&nbsp;</div>
+          <div><span class="t-prompt">$</span> <span class="t-muted">› no se envio ni un solo byte a la nube.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section class="faq">
+    <h2>Preguntas frecuentes</h2>
+
+    <details class="faq-item">
+      <summary>Es realmente local?</summary>
+      <div class="answer">
+        Si. Axon corre por completo en tu maquina. El brain, las skills, el knowledge base
+        y los modelos viven en tu disco. No hay un backend nuestro procesando tus datos —
+        la unica conexion a internet la haces tu cuando un skill consulta una fuente que
+        tu autorizas (por ejemplo, precios de mercado).
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Que pasa si cancelo?</summary>
+      <div class="answer">
+        Tu brain y todo tu knowledge base siguen siendo tuyos: son archivos en tu disco,
+        no algo que podamos quitarte. Al cancelar dejas de recibir nuevas versiones y dejan
+        de funcionar las skills de pago, pero el plan Free (3 skills core + dashboard basico)
+        sigue activo sin costo. No hay lock-in.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Como funciona la licencia sin servidor?</summary>
+      <div class="answer">
+        Tu license key esta firmada criptograficamente con nuestra clave privada. Axon
+        lleva la clave publica, asi que valida la firma <em>localmente</em> con
+        <code>node monetize/license.mjs activate "&lt;key&gt;"</code>. No hay un servidor
+        de activacion que pueda caerse ni espiarte: si la firma es valida, la licencia
+        funciona offline para siempre.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Puedo cambiar de plan?</summary>
+      <div class="answer">
+        Cuando quieras. Subes de Free a Pro o de Pro a Team y recibes una nueva license key
+        que desbloquea las capacidades del plan al instante. Las suscripciones se gestionan
+        por Stripe, asi que puedes hacer upgrade, downgrade o cancelar desde tu portal de
+        facturacion sin fricciones.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Mis datos se suben a algun lado?</summary>
+      <div class="answer">
+        No. Por diseno, Axon es local-first: tu identidad cifrada (AES-256-GCM), tu memoria
+        y tu knowledge base nunca se escriben fuera de tu maquina. No hay telemetria oculta
+        ni "llamadas a casa". Lo que es tuyo, se queda contigo.
+      </div>
+    </details>
+  </section>
+
+  <!-- ── FINAL CTA ── -->
+  <section class="final">
+    <h2>Empieza gratis. Crece cuando lo necesites.</h2>
+    <p>3 skills core, 100% local, sin tarjeta. Sube a Pro cuando quieras el sistema completo.</p>
+    <a href="axon.html#install" class="btn-primary" style="padding:14px 32px;font-size:14px;">Empezar gratis</a>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <span class="nav-logo">AXON</span>
+    <div>
+      <a href="axon.html">Producto</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="pricing.html">Precios</a>
+      <a href="mailto:jlmanga22@gmail.com">Contacto</a>
+    </div>
+    <span>© 2026 Axon · Personal AI OS · Local-first</span>
+  </footer>
+
+</body>
+</html>

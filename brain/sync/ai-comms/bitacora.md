@@ -161,3 +161,45 @@ usuario + todo lo de skills/_TEMPLATE, skill-creator, trainer).
 - Monetizacion: empaquetar el dashboard como producto
 
 ---
+
+## 2026-06-30 CLAUDE
+
+**Tarea:** Sistema de monetizacion local-first (licencias firmadas + pricing + gating)
+
+**Resultado:**
+- **`monetize/license.mjs`**: licencias con firma Ed25519, validacion OFFLINE.
+  Comandos: keygen, issue, activate, verify, status. PROBADO end-to-end incluyendo
+  rechazo de licencias falsificadas (firma alterada → rechazada).
+- **`monetize/tiers.mjs`**: fuente unica de verdad de los 4 tiers (free/pro/team/
+  enterprise) y que feature desbloquea cada uno.
+- **`pricing.html`**: pricing page de conversion, mismo tema oscuro, 4 tiers, FAQ,
+  placeholders STRIPE_PAYMENT_LINK_* para que Jorge pegue sus Payment Links.
+- **`serve.mjs`**: endpoint `/api/license` que valida la licencia local y devuelve
+  tier + features. PROBADO (free sin licencia, pro tras activar).
+- **`dashboard.html`**: badge de tier en header + banner de upgrade para usuarios free.
+- **`MONETIZATION.md`**: playbook completo (Stripe setup, flujo de venta, proyeccion
+  de ingresos, rotacion de claves, seguridad).
+
+**Modelo:** Local-first de verdad. Jorge cobra (Stripe Payment Link) → genera key
+firmada (`issue`) → cliente la activa (`activate`) → valida offline para siempre.
+Sin servidor, sin telemetria. Imposible de falsificar sin la clave privada.
+
+**ALERTA DE SEGURIDAD:** `monetize/keys/private.pem` esta gitignored y NUNCA debe
+subirse. Si se filtra, cualquiera podria generar licencias → rotar (ver MONETIZATION
+seccion 7). La `public.pem` SI se distribuye (valida licencias).
+
+**Tension detectada en el roadmap:** Fase 1 dice "$10K MRR" Y "50 usuarios Pro" como
+exit criteria, pero 50 Pro = $1,450 MRR. Para $10K hacen falta ~350 Pro o mezcla de
+tiers. Documentado en MONETIZATION seccion 6.
+
+**Para CODEX:**
+El gating de features se lee de `monetize/tiers.mjs`. Para chequear acceso:
+`import { can, canUseSkill } from './monetize/tiers.mjs'`. El tier actual viene de
+`brain/identity/license.key` (gitignored) validado contra `monetize/keys/public.pem`.
+
+**Proximo paso sugerido:**
+- Jorge: crear cuenta Stripe + 2 Payment Links, pegarlos en pricing.html
+- Hacer una venta de prueba en Stripe Test mode (issue → activate → status)
+- Onboarding de Paola como primera licencia Pro real
+
+---

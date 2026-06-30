@@ -2,6 +2,8 @@ import { createServer } from 'node:http';
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createPublicKey, verify as edVerify } from 'node:crypto';
+import { TIERS } from './monetize/tiers.mjs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -134,6 +136,30 @@ function apiMemory() {
   };
 }
 
+/** Valida la licencia local (offline) y devuelve el tier + features. */
+function apiLicense() {
+  const licPath = join(BRAIN, 'identity', 'license.key');
+  const pubPath = join(__dirname, 'monetize', 'keys', 'public.pem');
+  let tier = 'free', email = null, expires = null, reason = 'sin licencia';
+
+  if (existsSync(licPath) && existsSync(pubPath)) {
+    try {
+      const key = readFileSync(licPath, 'utf8').trim();
+      const [payloadB64, sigB64] = key.replace(/^AXON-/, '').split('.');
+      const pub = createPublicKey(readFileSync(pubPath));
+      const ok = edVerify(null, Buffer.from(payloadB64), pub, Buffer.from(sigB64, 'base64url'));
+      if (ok) {
+        const p = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+        const today = new Date().toISOString().slice(0, 10);
+        if (p.expires === 'never' || p.expires >= today) {
+          tier = p.tier; email = p.email; expires = p.expires; reason = 'valida';
+        } else { reason = 'expirada'; }
+      } else { reason = 'firma invalida'; }
+    } catch (e) { reason = 'error'; }
+  }
+  return { tier, email, expires, reason, features: TIERS[tier] || TIERS.free };
+}
+
 // ── HTTP server ───────────────────────────────────────────────────────────────
 
 const server = createServer((req, res) => {
@@ -148,6 +174,7 @@ const server = createServer((req, res) => {
   if (url === '/api/brain/watchlist') { return jsonOk(res, apiWatchlist()); }
   if (url === '/api/brain/daily')     { return jsonOk(res, apiDaily()); }
   if (url === '/api/brain/memory')    { return jsonOk(res, apiMemory()); }
+  if (url === '/api/license')         { return jsonOk(res, apiLicense()); }
 
   // ── Static files ──
   if (url === '/' || url === '') url = '/index.html';
