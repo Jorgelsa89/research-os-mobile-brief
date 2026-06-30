@@ -8,4 +8,5 @@ brain/sync/connectors/**/client_secret.json
 brain/sync/connectors/**/.tokens_temp.json
 brain/sync/connectors/**/tokens.enc
 monetize/keys/private.pem
+monetize/sales-log.json
 brain/identity/license.key

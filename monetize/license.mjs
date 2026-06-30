@@ -28,6 +28,7 @@ const DIR = dirname(fileURLToPath(import.meta.url));
 const KEYS = join(DIR, 'keys');
 const PRIV_PATH = join(KEYS, 'private.pem');        // SECRETO — gitignored
 const PUB_PATH = join(KEYS, 'public.pem');          // se distribuye con el producto
+const SALES_LOG = join(DIR, 'sales-log.json');      // CRM de ventas — gitignored (emails de clientes)
 
 const b64u = (buf) => Buffer.from(buf).toString('base64url');
 const unb64u = (str) => Buffer.from(str, 'base64url');
@@ -71,10 +72,56 @@ function issue(email, tier = 'pro', months = 1) {
   const priv = createPrivateKey(readFileSync(PRIV_PATH));
   const signature = edSign(null, Buffer.from(payloadB64), priv);
   const key = `AXON-${payloadB64}.${b64u(signature)}`;
+
+  // Registrar la venta en el CRM local (para no perder renovaciones)
+  let log = [];
+  if (existsSync(SALES_LOG)) { try { log = JSON.parse(readFileSync(SALES_LOG, 'utf8')); } catch {} }
+  log.push({ email, tier, issued, expires });
+  writeFileSync(SALES_LOG, JSON.stringify(log, null, 2));
+
   console.log(`\nLicencia para ${email} (${tier}, expira ${expires}):\n`);
   console.log(key);
-  console.log(`\nEnviasela al cliente. La guarda con: node monetize/license.mjs activate "<key>"\n`);
+  console.log(`\nRegistrada en el CRM. Enviasela al cliente.`);
+  console.log(`El cliente la activa con: node monetize/license.mjs activate "<key>"\n`);
   return key;
+}
+
+// ─── list: muestra todas las licencias emitidas ────────────────────────────
+function list() {
+  if (!existsSync(SALES_LOG)) { console.log('No hay licencias emitidas todavia.'); return; }
+  const log = JSON.parse(readFileSync(SALES_LOG, 'utf8'));
+  if (!log.length) { console.log('No hay licencias emitidas todavia.'); return; }
+  console.log(`\nLicencias emitidas (${log.length}):\n`);
+  for (const l of log) {
+    console.log(`  ${l.email.padEnd(28)} ${l.tier.padEnd(6)} emitida ${l.issued}  expira ${l.expires}`);
+  }
+  // MRR estimado (solo licencias vigentes)
+  const today = new Date().toISOString().slice(0, 10);
+  const prices = { pro: 29, team: 19, enterprise: 0, free: 0 };
+  const active = log.filter(l => l.expires === 'never' || l.expires >= today);
+  const mrr = active.reduce((s, l) => s + (prices[l.tier] || 0), 0);
+  console.log(`\n  Activas: ${active.length}  ·  MRR estimado: $${mrr}\n`);
+}
+
+// ─── renewals: licencias que vencen pronto ─────────────────────────────────
+function renewals(days = 7) {
+  if (!existsSync(SALES_LOG)) { console.log('No hay licencias emitidas.'); return; }
+  const log = JSON.parse(readFileSync(SALES_LOG, 'utf8'));
+  const now = new Date();
+  const limit = new Date(now.getTime() + Number(days) * 86400000).toISOString().slice(0, 10);
+  const today = now.toISOString().slice(0, 10);
+  const soon = log.filter(l => l.expires !== 'never' && l.expires >= today && l.expires <= limit);
+  const expired = log.filter(l => l.expires !== 'never' && l.expires < today);
+  if (soon.length) {
+    console.log(`\n⏰ Vencen en los proximos ${days} dias (${soon.length}):\n`);
+    for (const l of soon) console.log(`  ${l.email.padEnd(28)} ${l.tier}  expira ${l.expires} → renovar: node monetize/license.mjs issue ${l.email} ${l.tier} 1`);
+  }
+  if (expired.length) {
+    console.log(`\n❌ Ya vencidas (${expired.length}) — recupera estos clientes:\n`);
+    for (const l of expired) console.log(`  ${l.email.padEnd(28)} ${l.tier}  vencio ${l.expires}`);
+  }
+  if (!soon.length && !expired.length) console.log('\n✓ Ninguna licencia vence pronto. Todo al dia.\n');
+  else console.log('');
 }
 
 // ─── verify: valida una key (offline, con clave publica) ────────────────────
@@ -138,15 +185,21 @@ switch (cmd) {
     process.exit(r.valid ? 0 : 1);
   }
   case 'status': status(); break;
+  case 'list': list(); break;
+  case 'renewals': renewals(args[0] ? Number(args[0]) : 7); break;
   default:
     console.log(`Axon — Sistema de licencias
 
-Uso:
-  node monetize/license.mjs keygen                      Genera tu par de claves (una vez)
-  node monetize/license.mjs issue <email> <tier> [meses]  Emite una licencia firmada
-  node monetize/license.mjs activate "<key>"            Guarda la licencia (cliente)
-  node monetize/license.mjs verify "<key>"             Valida una licencia
-  node monetize/license.mjs status                     Muestra tu tier actual
+Para vender (tu):
+  node monetize/license.mjs keygen                       Genera tu par de claves (una vez)
+  node monetize/license.mjs issue <email> <tier> [meses]   Emite una licencia firmada
+  node monetize/license.mjs list                         Lista licencias emitidas + MRR
+  node monetize/license.mjs renewals [dias]              Que licencias vencen pronto
+
+Para el cliente:
+  node monetize/license.mjs activate "<key>"             Guarda su licencia
+  node monetize/license.mjs status                       Muestra su tier actual
+  node monetize/license.mjs verify "<key>"              Valida una licencia
 
 Tiers: free | pro | team | enterprise`);
 }
