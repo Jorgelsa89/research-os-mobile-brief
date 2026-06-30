@@ -104,8 +104,16 @@ try {
   if (count) info(`${count} notas en el cerebro`);
 } catch { /* opcional */ }
 
-// 5. Resumen y arranque
-console.log(`\n${C.bold}  Listo para usar.${C.reset}\n`);
+// 5. Auto-brief: tu dia, sin preguntar
+if (existsSync(join(ROOT, 'brain', 'brief.mjs'))) {
+  try {
+    const brief = run('node brain/brief.mjs');
+    console.log(brief);
+  } catch { /* si falla el brief, no bloquea el arranque */ }
+}
+
+// 6. Resumen y arranque
+console.log(`${C.bold}  Listo para usar.${C.reset}\n`);
 
 if (pending.length) {
   console.log(`${C.dim}  Para conectar lo que falta (una sola vez):${C.reset}`);
@@ -121,7 +129,7 @@ console.log('');
 
 if (STATUS_ONLY) process.exit(0);
 
-// 6. Arrancar el dashboard
+// 7. Arrancar el dashboard
 if (existsSync(join(ROOT, 'serve.mjs'))) {
   console.log(`${C.dim}  Arrancando dashboard...${C.reset}\n`);
   const server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'inherit' });
