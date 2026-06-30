@@ -9,7 +9,7 @@
 | Usuario | Brain | Skills activos | Skill principal | Estado |
 |---------|-------|----------------|-----------------|--------|
 | Jorge | `research-os-mobile-brief/` (este repo) | 12 skills completos | Research / Trading | ✅ Calendario conectado |
-| Paola | `paola-axon-brain/` (su maquina) | Por configurar | Daily / Email | ⬜ Pendiente setup |
+| Paola | `paola-template/` → paquete | daily, email, relationships, learning, creative | Daily / Email | 🟡 Paquete listo, pendiente activar |
 | Beta-3 | TBD | Por configurar | TBD | ⬜ Slot disponible |
 | Beta-4 | TBD | Por configurar | TBD | ⬜ Slot disponible |
 | Beta-5 | TBD | Por configurar | TBD | ⬜ Slot disponible |
@@ -38,66 +38,28 @@ claude .
 
 ---
 
-## Para Paola — Setup en 5 minutos
+## Flujo de onboarding (probado, mismo para todos)
 
-### Paso 1: Prerequisitos
-
-Instala estas herramientas en tu computadora:
-
-| Herramienta | Link | Para que sirve |
-|-------------|------|----------------|
-| **Git** | https://git-scm.com | Guardar historial del brain |
-| **Node.js** | https://nodejs.org | Correr el instalador |
-| **Claude Code** | https://claude.ai/code | La IA que vive en tu brain |
-| **Ollama** (opcional) | https://ollama.ai | Modelos locales sin costo |
-
-### Paso 2: Instalar tu brain
-
-Abre una terminal y ejecuta:
+Agregar un beta user es un comando por paso. Detalle completo en `PAOLA-ONBOARDING.md`.
 
 ```bash
-# Descarga el instalador y correlo
-curl -O https://raw.githubusercontent.com/jorgelsa89/research-os-mobile-brief/main/axon-init.sh
-bash axon-init.sh
+# 1. Crear el template del usuario (nombre + sus skills)
+node scripts/new-user.mjs <nombre> "daily,email,learning"
+
+# 2. Empaquetar (runtime del producto + su brain)
+node scripts/package-user.mjs <nombre>-template /tmp/<nombre>-axon
+
+# 3. Emitir su licencia Pro
+node monetize/license.mjs issue <su-email> pro 1
+
+# 4. Comprimir /tmp/<nombre>-axon, enviarlo + la key. Registrar en la tabla de arriba.
 ```
 
-El wizard te va a preguntar:
-- Tu nombre
-- Tu zona horaria
-- Que dominios quieres activar (elige los que uses en tu vida)
+El usuario solo descomprime, corre `node monetize/license.mjs activate "<key>"`,
+y arranca con doble-click en `Axon.bat` (Windows) o `Axon.command` (Mac).
 
-### Paso 3: Abrir con Claude Code
-
-```bash
-# Cuando termine el installer:
-cd mi-axon-brain    # (o el nombre que elegiste)
-claude .            # Abre Claude Code en tu brain
-```
-
-### Paso 4: Primera conversacion
-
-Cuéntale a Axon quién eres:
-```
-"Hola, me llamo Paola. Trabajo en [tu trabajo]. 
- Mis proyectos actuales son [proyectos]. 
- Actualiza mi shared-context con esta información."
-```
-
-Eso es todo. Tu brain empieza a crecer desde aqui.
-
----
-
-## Skills recomendados para Paola
-
-Modifica esto segun lo que Paola necesite. Sugerencias iniciales:
-
-```
-daily        — Brief matutino, cierre del dia
-email        — Triage de correos, respuestas
-relationships — CRM personal, seguimiento
-learning     — Aprender cualquier tema
-creative     — Proyectos creativos, ideas
-```
+**Paola** ya tiene su template (`paola-template/`) con 5 skills: daily, email,
+relationships, learning, creative. Falta generar su paquete y enviarselo.
 
 ---
 

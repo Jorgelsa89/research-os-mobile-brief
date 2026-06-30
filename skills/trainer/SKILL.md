@@ -52,7 +52,10 @@ Una entrada nueva en `brain/memory/training/training-log.md` con frontmatter, ma
 
 1. **Leer la materia prima.** Recorrer todos los `skills/*/lessons.md` y leer
    `brain/memory/training/training-log.md` para saber hasta donde se proceso la ultima vez
-   (evitar re-procesar lecciones ya consolidadas).
+   (evitar re-procesar lecciones ya consolidadas). **Incluir el Friction Log de
+   `BETA.md`** y las entradas `FRICTION`/`FEEDBACK` de `brain/sync/ai-comms/bitacora.md`:
+   son feedback de usuarios reales y tienen prioridad alta — un punto de friccion
+   reportado por un beta user vale mas que una leccion interna.
 2. **Detectar patrones recurrentes.** Agrupar lecciones por tema. Buscar:
    - Errores repetidos (mismo fallo en >=2 ejecuciones) → candidato a regla.
    - Preferencias implicitas (Jorge eligio lo mismo >=2 veces) → candidato a `preferences.md`.
