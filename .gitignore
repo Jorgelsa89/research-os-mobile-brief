@@ -9,4 +9,6 @@ brain/sync/connectors/**/.tokens_temp.json
 brain/sync/connectors/**/tokens.enc
 monetize/keys/private.pem
 monetize/sales-log.json
+monetize/.processed-sessions.json
+monetize/pending-emails.log
 brain/identity/license.key
