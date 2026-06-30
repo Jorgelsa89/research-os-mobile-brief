@@ -1,34 +1,91 @@
-# Research OS Mobile
+# Axon — Tu cerebro digital
 
-Version publica sanitizada del dashboard para acceso desde telefono.
+> Un asistente personal con IA que vive en tu computadora, te conoce, actua por ti,
+> y crece contigo. Local-first, privado, y tuyo.
 
-Tambien funciona como PWA instalable en Android.
+Axon convierte a Claude Code en un asistente personal con memoria persistente.
+Toda tu informacion vive en archivos markdown en tu maquina — sin nube, sin
+telemetria, sin que nadie mas la vea.
 
-## Social Composer
+## Arranque rapido
 
-La pantalla inicial incluye un compositor rapido para Instagram y Facebook.
+```bash
+node axon.mjs          # o doble-click en Axon.bat (Windows) / Axon.command (Mac)
+```
 
-Puede:
+Eso sincroniza, verifica tu entorno, detecta tus conectores, te da tu brief del
+dia, y arranca el dashboard. Un solo paso.
 
-- Generar caption/post desde una idea en bruto.
-- Copiar el texto para pegarlo en Instagram o Facebook.
-- Usar el menu compartir del telefono cuando el navegador lo soporte.
-- Guardar borradores localmente en el telefono.
+Para instalar desde cero (cualquier persona):
 
-No publica automaticamente ni guarda credenciales.
+```bash
+bash axon-init.sh      # wizard interactivo que crea tu brain personalizado
+```
 
-No contiene:
+## Que puede hacer
 
-- Portfolio real.
-- Credenciales.
-- Rutas locales privadas.
-- Gmail.
-- Llaves API.
-- Datos financieros sensibles.
+Hablas con Claude Code en lenguaje natural. Axon entiende y actua:
 
-## Instalar En Android
+- **"investiga NVDA"** → analisis completo con scorecard de 8 metricas
+- **"que hay para hoy"** → brief del dia con calendario, correo, watchlist y pendientes
+- **"agrega reunion el viernes 3pm"** → lo escribe en tu Google Calendar
+- **"revisa mis correos"** → triage de Gmail (urgente / informativo / seguimiento)
+- **"crea un skill para X"** → genera una habilidad nueva en segundos
+- **"entrena"** → revisa lo aprendido y mejora sus propias reglas
 
-1. Abrir la URL publica en Chrome.
-2. Menu de tres puntos.
-3. Tocar "Agregar a pantalla principal" o "Instalar app".
-4. Abrir desde el icono Research OS.
+## Arquitectura
+
+```
+brain/          ← el cerebro: identidad, memoria, conocimiento
+  identity/     ← datos personales cifrados (AES-256-GCM)
+  memory/       ← preferencias, patrones, north-star, training
+  knowledge/    ← todo lo que acumulas (research, trading, daily...)
+  sync/         ← conectores (Calendar, Gmail) y comunicacion entre IAs
+skills/         ← las habilidades (corteza): 12 dominios + meta-skills
+monetize/       ← sistema de licencias local-first
+CLAUDE.md       ← el cerebro central que orquesta todo
+```
+
+## Skills
+
+**Core:** research · trading · email · social · daily
+**Expansion:** finance · health · relationships · learning · legal · creative · business
+**Meta:** skill-creator (crea skills) · trainer (aprende y mejora)
+
+## Conectores
+
+- **Google Calendar** — leer y crear eventos (`brain/sync/connectors/google-calendar/`)
+- **Gmail** — leer, triage y enviar (`brain/sync/connectors/gmail/`)
+
+Los tokens se guardan cifrados localmente y nunca se suben a GitHub.
+
+## Planes
+
+| Plan | Precio | Incluye |
+|------|--------|---------|
+| Free | $0 | 3 skills core, dashboard, 100% local |
+| Pro | $29/mes | Los 12 skills, conectores, auto-brief, crear/entrenar skills |
+| Team | $19/usuario/mes | Todo Pro + multi-usuario, brain compartido |
+| Enterprise | Custom | Verticales, fine-tuning, on-premise, SLA |
+
+Las licencias se firman criptograficamente y se validan offline — sin servidor.
+Ver [`MONETIZATION.md`](MONETIZATION.md) y [`pricing.html`](pricing.html).
+
+## Documentacion
+
+- [`CLAUDE.md`](CLAUDE.md) — como piensa y opera Axon
+- [`BRAIN-PROTOCOL.md`](BRAIN-PROTOCOL.md) — especificacion del formato
+- [`ONBOARDING.md`](ONBOARDING.md) — guia para nuevos usuarios
+- [`AXON-VISION.md`](AXON-VISION.md) · [`AXON-ROADMAP.md`](AXON-ROADMAP.md) — la startup
+- [`brain/memory/north-star.md`](brain/memory/north-star.md) — la mision
+
+## Privacidad
+
+- Todo es local. Tu informacion no sale de tu maquina.
+- Datos sensibles cifrados con AES-256-GCM (`brain/security/crypto.mjs`).
+- Sin telemetria, sin tracking, sin servidor que valide tu licencia.
+
+---
+
+*El dashboard movil original (PWA del Social Composer) sigue disponible en
+[`index.html`](index.html).*
