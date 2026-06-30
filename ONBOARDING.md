@@ -14,6 +14,21 @@
 
 ## Seccion 2 — Setup en 10 minutos
 
+### El camino mas facil (ya tienes el repo)
+
+Si ya clonaste el proyecto, **arrancar Axon es un solo paso:**
+
+- **Windows:** doble click en `Axon.bat`
+- **Mac:** doble click en `Axon.command`
+- **Terminal (cualquier sistema):** `node axon.mjs`
+
+Eso sincroniza con GitHub, verifica todo, te dice que conectores tienes activos,
+y arranca el dashboard. Sin `cd`, sin `git pull`, sin comandos sueltos.
+
+Si es tu primera vez y aun no tienes el repo, sigue el setup completo abajo.
+
+---
+
 ### Mac / Linux
 
 **Paso 1 — Prerequisitos**

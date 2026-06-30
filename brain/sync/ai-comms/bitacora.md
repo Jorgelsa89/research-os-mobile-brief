@@ -99,3 +99,32 @@ Ahora Axon puede crear sus propios skills y entrenarse. Para crear un skill: `no
 - Fase 1 monetizacion: dashboard como producto
 
 ---
+
+## 2026-06-30 CLAUDE
+
+**Tarea:** North Star grabado + arranque de un solo paso (eliminar friccion)
+
+**Resultado:**
+- **`brain/memory/north-star.md`**: la mision de Axon grabada como norte permanente.
+  Jarvis la lee al inicio de cada sesion. Regla de oro: resolver, probar, mostrar.
+- **`axon.mjs`**: launcher de UN comando. Reemplaza los 5-6 pasos manuales que Jorge
+  sufrio (cd, git stash, git pull, pop, renombrar). Auto-ubica raiz, verifica Node 18+,
+  sincroniza con auto-stash, detecta conectores configurados, arranca dashboard.
+  PROBADO desde otra carpeta: funciona end-to-end.
+- **`Axon.bat` / `Axon.command`**: doble-click para Windows/Mac (sin abrir terminal).
+- `CLAUDE.md` + `ONBOARDING.md` actualizados con el arranque de un paso.
+
+**Por que:** El goal de Jorge (north-star punto 2) exige "facil para humanos, no para
+ingenieros — un click, no diez comandos". Esta es la primera ejecucion directa hacia
+ese norte: la friccion de onboarding que el vivio en vivo, eliminada.
+
+**Para CODEX:**
+El arranque oficial ahora es `node axon.mjs` (o doble-click en Axon.bat/.command).
+Si agregas conectores, registralos en el array `connectors` de `axon.mjs` para que
+el launcher los detecte automaticamente.
+
+**Proximo paso sugerido:**
+- Auto-brief al arrancar (que "que hay para hoy" se dispare solo al iniciar)
+- Onboarding de Paola + 5 beta users con el nuevo flujo de un click
+
+---
