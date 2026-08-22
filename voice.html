@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#090c10" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Voice — Research OS</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="voice.css" />
+</head>
+<body class="voice">
+
+<header class="v-top">
+  <div class="v-brand">
+    <span class="v-dot" id="dot"></span>
+    <span id="brand">Voice</span>
+  </div>
+  <button class="v-icon-btn" id="openSettings" aria-label="Ajustes">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  </button>
+</header>
+
+<main class="v-stage">
+  <div class="v-mic-wrap" id="micWrap">
+    <div class="v-spin"></div>
+    <button class="v-mic" id="mic" aria-label="Mantener pulsado para hablar">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="9" y="2" width="6" height="12" rx="3" />
+        <path d="M5 11a7 7 0 0 0 14 0" />
+        <path d="M12 18v4" />
+      </svg>
+      <span class="v-latch"></span>
+    </button>
+  </div>
+
+  <div class="v-status">
+    <strong id="statusMain">Mantén pulsado para hablar</strong>
+    <span id="statusSub">Un toque corto deja la grabación fija</span>
+  </div>
+
+  <div class="v-heard" id="heard"></div>
+</main>
+
+<section class="v-feed" id="feed">
+  <p class="v-empty" id="empty">
+    Nada todavía.<br />
+    Prueba con «recuérdame llamar al taller mañana a las diez».
+  </p>
+</section>
+
+<div class="v-sheet" id="sheet">
+  <div class="v-sheet-inner">
+    <h2>Ajustes</h2>
+
+    <label>
+      Servidor
+      <input type="url" id="cfgBase" placeholder="vacío = mismo origen" inputmode="url"
+             autocapitalize="off" autocorrect="off" spellcheck="false" />
+    </label>
+    <p class="v-hint">
+      Déjalo vacío si abres esta app desde el propio servidor de tu PC.
+      Si la abres desde GitHub Pages, pon aquí la URL <code>https://</code> de tu PC
+      (Tailscale o Cloudflare Tunnel). Una dirección <code>http://</code> no sirve:
+      el navegador bloquea el micrófono fuera de contexto seguro.
+    </p>
+
+    <label>
+      Modelo de Ollama
+      <input type="text" id="cfgModel" placeholder="por defecto el del servidor"
+             autocapitalize="off" autocorrect="off" spellcheck="false" />
+    </label>
+
+    <label class="v-check">
+      <input type="checkbox" id="cfgSpeak" />
+      Responder en voz alta
+    </label>
+
+    <label class="v-check">
+      <input type="checkbox" id="cfgHaptic" />
+      Vibración al soltar
+    </label>
+
+    <div class="v-row">
+      <button class="secondary" id="btnCheck">Probar conexión</button>
+      <button id="btnClose">Listo</button>
+    </div>
+
+    <p class="v-hint" id="diag"></p>
+
+    <div class="v-row">
+      <button class="secondary" id="btnClear">Borrar historial</button>
+    </div>
+  </div>
+</div>
+
+<script src="voice.js"></script>
+</body>
+</html>

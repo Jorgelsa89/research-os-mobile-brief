@@ -1,0 +1,439 @@
+/* Voice — capture surface for the one-button device prototype. */
+
+:root {
+  --ring: 168px;
+  --accent: var(--blue);
+}
+
+body.voice {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overscroll-behavior: none;
+}
+
+.v-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.v-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.v-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background 200ms ease, box-shadow 200ms ease;
+}
+
+.v-dot.ok {
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(69, 212, 143, 0.14);
+}
+
+.v-dot.bad {
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.14);
+}
+
+.v-icon-btn {
+  min-height: 38px;
+  width: 38px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.v-icon-btn:active {
+  background: var(--panel2);
+}
+
+/* ---------- stage ---------- */
+
+.v-stage {
+  flex: 1 1 auto;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 26px;
+  padding: 20px 16px 8px;
+}
+
+.v-mic-wrap {
+  position: relative;
+  width: var(--ring);
+  height: var(--ring);
+  display: grid;
+  place-items: center;
+  --level: 0;
+}
+
+/* amplitude halo — scales with mic level, nothing else moves */
+.v-mic-wrap::before,
+.v-mic-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  opacity: 0;
+  transform: scale(1);
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+
+body.rec .v-mic-wrap::before {
+  opacity: calc(0.34 + var(--level) * 0.34);
+  transform: scale(calc(1.06 + var(--level) * 0.20));
+}
+
+body.rec .v-mic-wrap::after {
+  opacity: calc(0.12 + var(--level) * 0.20);
+  transform: scale(calc(1.16 + var(--level) * 0.42));
+}
+
+.v-mic {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(120% 120% at 50% 16%, #1c2833 0%, #10161c 46%, #0b1015 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 22px 48px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transition: transform 140ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  user-select: none;
+}
+
+.v-mic:active {
+  transform: scale(0.975);
+}
+
+body.rec .v-mic {
+  border-color: var(--accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 0 1px rgba(87, 168, 255, 0.28),
+    0 22px 52px rgba(87, 168, 255, 0.14);
+}
+
+body.busy .v-mic {
+  border-color: rgba(242, 184, 75, 0.5);
+}
+
+.v-mic svg {
+  width: 46px;
+  height: 46px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.rec .v-mic svg {
+  color: var(--accent);
+}
+
+/* latched state gets a steady inner pip */
+.v-latch {
+  position: absolute;
+  bottom: 30px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--red);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+body.latched .v-latch {
+  opacity: 1;
+}
+
+/* processing arc */
+.v-spin {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  border-top-color: var(--amber);
+  opacity: 0;
+  animation: v-rot 900ms linear infinite;
+}
+
+body.busy .v-spin {
+  opacity: 1;
+}
+
+@keyframes v-rot {
+  to { transform: rotate(360deg); }
+}
+
+.v-status {
+  text-align: center;
+  display: grid;
+  gap: 7px;
+  min-height: 52px;
+}
+
+.v-status strong {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.v-status span {
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.v-heard {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  text-align: center;
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.5;
+  min-height: 26px;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.v-heard.on {
+  opacity: 1;
+}
+
+/* ---------- feed ---------- */
+
+.v-feed {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding: 4px 16px 26px;
+  display: grid;
+  gap: 10px;
+}
+
+.v-card {
+  border: 1px solid var(--line);
+  border-left-width: 3px;
+  border-radius: 10px;
+  background: var(--panel);
+  padding: 13px 14px;
+  display: grid;
+  gap: 8px;
+  animation: v-in 260ms ease both;
+}
+
+@keyframes v-in {
+  from { opacity: 0; transform: translateY(7px); }
+}
+
+.v-card.instant { border-left-color: var(--green); }
+.v-card.deferred { border-left-color: var(--amber); }
+.v-card.reply { border-left-color: var(--blue); }
+.v-card.error { border-left-color: var(--red); }
+
+.v-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.v-kind {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.v-card.instant .v-kind { color: var(--green); }
+.v-card.deferred .v-kind { color: var(--amber); }
+.v-card.reply .v-kind { color: var(--blue); }
+.v-card.error .v-kind { color: var(--red); }
+
+.v-time {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.v-card p {
+  color: var(--text);
+  line-height: 1.5;
+  font-size: 15px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.v-card p.said {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.v-card .v-working {
+  color: var(--amber);
+  font-size: 13px;
+}
+
+.v-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.v-links a {
+  flex: 1 1 120px;
+  min-height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel2);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.v-empty {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 8px 0 0;
+}
+
+/* ---------- settings sheet ---------- */
+
+.v-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(4, 7, 10, 0.72);
+  backdrop-filter: blur(5px);
+  display: grid;
+  align-items: end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.v-sheet.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.v-sheet-inner {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px 16px 0 0;
+  padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 13px;
+  max-height: 88dvh;
+  overflow-y: auto;
+  transform: translateY(14px);
+  transition: transform 220ms ease;
+}
+
+.v-sheet.on .v-sheet-inner {
+  transform: translateY(0);
+}
+
+.v-sheet h2 {
+  font-size: 19px;
+  margin: 0;
+}
+
+.v-sheet input[type="text"],
+.v-sheet input[type="url"] {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #090d12;
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+  outline: none;
+}
+
+.v-sheet input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(87, 168, 255, 0.14);
+}
+
+.v-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.v-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--blue);
+}
+
+.v-hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.v-hint code {
+  color: var(--text);
+  background: var(--panel2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.v-row {
+  display: flex;
+  gap: 9px;
+}
+
+.v-row button {
+  flex: 1;
+}
+
+@media (max-height: 680px) {
+  :root { --ring: 138px; }
+  .v-stage { gap: 18px; }
+}

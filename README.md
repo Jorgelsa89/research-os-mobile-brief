@@ -32,3 +32,19 @@ No contiene:
 2. Menu de tres puntos.
 3. Tocar "Agregar a pantalla principal" o "Instalar app".
 4. Abrir desde el icono Research OS.
+
+## Voice (prototipo Fase 0)
+
+`voice.html` es el prototipo del dispositivo de un boton: mantener pulsado,
+hablar, y el telefono ejecuta la tarea.
+
+- Whisper transcribe la voz en tu PC.
+- Ollama decide que hacer.
+- El movil ejecuta o prepara la accion.
+
+El puente que une ambos esta en [`server/`](server/README.md), sin dependencias.
+
+Requiere `https://` para que el navegador de acceso al microfono. Ver
+[`server/README.md`](server/README.md).
+
+Analisis completo del dispositivo: [`DISPOSITIVO-BOTON.md`](DISPOSITIVO-BOTON.md).
