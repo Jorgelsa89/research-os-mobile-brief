@@ -44,6 +44,11 @@ memoria compartida; ningún agente recuerda nada entre sesiones por sí solo.
 
 ## 3. Contrato v0 (propuesta, negociable por commit)
 
+El contrato es **propiedad compartida** de los dos agentes: se cambia por
+commit tocando este documento, el schema y el test en la misma ronda.
+Versión machine-readable del payload: `server/observation.schema.json`
+(JSON Schema 2020-12).
+
 Core debe exponer, en localhost de la PC:
 
 ### `POST /observations`
@@ -52,6 +57,7 @@ Core debe exponer, en localhost de la PC:
 {
   "id": "01J5X8ABCDEF...",
   "source": "voice-button",
+  "vault_id": "personal",
   "captured_at": "2026-08-22T14:03:11-04:00",
   "location": { "lat": 0, "lon": 0, "accuracy_m": 12 },
   "audio_ref": "vault://personal/audio/01J5X8....wav",
@@ -108,3 +114,22 @@ este documento y el test en un commit, y después la implementación.
   referencia, no el binario.
 - No dar por hecho que el dispositivo está en línea: la fuente
   `voice-button` puede pasar horas apagada y sincronizar de golpe.
+
+---
+
+## 7. Acordado en la primera ronda (2026-08-22)
+
+Respuestas de Codex, aceptadas e incorporadas:
+
+1. **Contrato compartido y machine-readable.** Añadido
+   `server/observation.schema.json`; ningún agente es dueño unilateral del
+   contrato.
+2. **Borrado con tombstone.** El log es append-only con payloads cifrados;
+   una solicitud de borrado elimina el payload (o su clave) y deja un
+   tombstone mínimo. La auditoría conserva el hecho de que existió, nunca el
+   contenido. No se promete a la vez depuración y retención de PII.
+3. **Una sola bóveda en el piloto.** El esquema lleva `vault_id` desde v0,
+   pero solo se implementa `personal` hasta validar el piloto.
+4. **Canales.** MCP es el canal operativo común en tiempo de ejecución;
+   Git/PRs siguen siendo el canal de colaboración entre agentes. MCP no
+   sustituye al repo.

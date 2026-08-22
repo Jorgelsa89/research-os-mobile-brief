@@ -34,6 +34,7 @@ function observation(id) {
   return {
     id,
     source: "voice-button",
+    vault_id: "personal",
     captured_at: new Date().toISOString(),
     location: { lat: 25.76, lon: -80.19, accuracy_m: 15 },
     audio_ref: "vault://personal/audio/" + id + ".wav",
