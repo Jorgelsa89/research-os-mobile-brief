@@ -52,6 +52,7 @@ Variables de entorno, todas opcionales:
 | Variable | Por defecto |
 |---|---|
 | `PORT` | `8788` |
+| `HOST` | `127.0.0.1` — el puente solo escucha en localhost; `tailscale serve` hace proxy desde ahí. `HOST=0.0.0.0` solo si de verdad necesitas exponerlo a la LAN |
 | `WHISPER_URL` | `http://127.0.0.1:8000` |
 | `WHISPER_PATH` | `/v1/audio/transcriptions` |
 | `WHISPER_MODEL` | `Systran/faster-whisper-large-v3` |

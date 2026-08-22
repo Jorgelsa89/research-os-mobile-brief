@@ -12,6 +12,8 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
 const PORT = Number(process.env.PORT || 8788);
+// tailscale serve proxies from localhost, so there is no reason to listen on the LAN
+const HOST = process.env.HOST || "127.0.0.1";
 const WHISPER_URL = (process.env.WHISPER_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 const WHISPER_MODEL = process.env.WHISPER_MODEL || "Systran/faster-whisper-large-v3";
 // some builds expose /inference instead of the OpenAI-compatible route
@@ -350,8 +352,8 @@ createServer(async (req, res) => {
     console.error("✗", err.message);
     json(res, 500, { error: err.message });
   }
-}).listen(PORT, "0.0.0.0", () => {
-  console.log("Voice bridge  →  http://localhost:" + PORT);
+}).listen(PORT, HOST, () => {
+  console.log("Voice bridge  →  http://" + HOST + ":" + PORT);
   console.log("  Whisper      " + WHISPER_URL + WHISPER_PATH + "  (" + WHISPER_MODEL + ")");
   console.log("  Ollama       " + OLLAMA_URL + "  (" + OLLAMA_MODEL + ")");
   console.log("\nDesde el móvil necesitas https. Con Tailscale:  tailscale serve --bg " + PORT + "\n");

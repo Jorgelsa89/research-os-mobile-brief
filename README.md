@@ -48,3 +48,5 @@ Requiere `https://` para que el navegador de acceso al microfono. Ver
 [`server/README.md`](server/README.md).
 
 Analisis completo del dispositivo: [`DISPOSITIVO-BOTON.md`](DISPOSITIVO-BOTON.md).
+
+Integracion con el sistema Jarvis local-first: [`JARVIS-INTEGRACION.md`](JARVIS-INTEGRACION.md).
