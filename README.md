@@ -53,3 +53,5 @@ Integracion con el sistema Jarvis local-first: [`JARVIS-INTEGRACION.md`](JARVIS-
 
 Brief para el agente que construye Jarvis Core: [`PARA-CODEX.md`](PARA-CODEX.md)
 (incluye el test de contrato `server/contract-test.mjs`).
+
+Puesta en marcha en la PC (o instrucciones para Codex): [`SETUP-PC.md`](SETUP-PC.md).
