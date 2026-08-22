@@ -101,3 +101,23 @@ conexión**: te dice cuál de los dos falla.
 Presupuesto de latencia realista con GPU decente: entre 1 y 3 segundos desde
 que sueltas el botón hasta la respuesta. En CPU, bastante más — es normal, y es
 justo el dato que la Fase 0 tiene que medir.
+
+---
+
+## 6. Encargos (trabajo en el fondo)
+
+Cuando dictas algo que hay que **producir** — "prepárame un plan de estudio
+para la clase del jueves" — el agente no intenta contestarlo al momento:
+
+1. Crea un **encargo** y lo confirma en el acto ("me pongo con ello").
+2. El servidor lo trabaja en el fondo, aunque cierres la app del móvil.
+3. El resultado aparece en la **Bandeja** (icono junto a los ajustes),
+   renderizado y listo para leer o copiar.
+
+Los encargos se guardan en `server/data/jobs/` (fuera de git) y sobreviven
+reinicios del servidor: lo que estaba en cola se retoma al arrancar.
+
+Límites actuales del prototipo: no hay notificación push — te enteras al
+abrir la app (el globito de la Bandeja se actualiza solo); y el redactor es
+tu modelo de Ollama, sin acceso a la web en vivo, así que los encargos que
+dependan de precios o datos actuales llevan una sección "Para verificar".

@@ -17,7 +17,9 @@
     main: $("statusMain"), sub: $("statusSub"), heard: $("heard"),
     feed: $("feed"), empty: $("empty"), sheet: $("sheet"), diag: $("diag"),
     cfgBase: $("cfgBase"), cfgModel: $("cfgModel"),
-    cfgSpeak: $("cfgSpeak"), cfgHaptic: $("cfgHaptic")
+    cfgSpeak: $("cfgSpeak"), cfgHaptic: $("cfgHaptic"),
+    inbox: $("inbox"), jobList: $("jobList"), badge: $("badge"),
+    docView: $("docView"), docTitle: $("docTitle"), docBody: $("docBody")
   };
 
   const cfg = Object.assign(
@@ -79,7 +81,7 @@
 
   const KINDS = {
     instant: "Hecho",
-    deferred: "En cola",
+    deferred: "Encargo",
     reply: "Respuesta",
     error: "Error"
   };
@@ -331,25 +333,12 @@
     say(result.speech);
     idle();
 
-    if (result.kind === "deferred" && result.query) {
-      shown.body.textContent = result.body;
-      const working = document.createElement("p");
-      working.className = "v-working";
-      working.textContent = "Trabajando…";
-      shown.node.append(working);
-
-      try {
-        const done = await post("/api/research", JSON.stringify({ query: result.query, model: cfg.model || undefined }),
-                                { "Content-Type": "application/json" });
-        working.remove();
-        shown.body.textContent = done.body || "Sin resultado.";
-        result.body = done.body;
-        remember(result);
-        buzz([14, 50, 14]);
-        say("Ya lo tengo.");
-      } catch (err) {
-        working.textContent = "No se pudo completar: " + (err.message || err);
-      }
+    if (result.kind === "deferred") {
+      const note = document.createElement("p");
+      note.className = "v-working";
+      note.textContent = "Trabajando en el fondo — el resultado aparecerá en la Bandeja. Puedes cerrar la app.";
+      shown.node.append(note);
+      refreshBadge();
     }
   }
 
@@ -422,6 +411,155 @@
     }
   }
 
+  /* ---------- bandeja ---------- */
+
+  const CHIP = { queued: "en cola", working: "trabajando", done: "listo", failed: "falló" };
+  let inboxTimer = null;
+
+  async function fetchJobs() {
+    try {
+      const res = await fetch(api("/api/jobs"), { cache: "no-store" });
+      if (!res.ok) return [];
+      return (await res.json()).jobs || [];
+    } catch { return []; }
+  }
+
+  async function refreshBadge() {
+    const jobs = await fetchJobs();
+    const active = jobs.filter((j) => j.status === "queued" || j.status === "working").length;
+    const done = jobs.filter((j) => j.status === "done").length;
+    if (active) {
+      el.badge.hidden = false;
+      el.badge.classList.remove("done");
+      el.badge.textContent = active;
+    } else if (done) {
+      el.badge.hidden = false;
+      el.badge.classList.add("done");
+      el.badge.textContent = done;
+    } else {
+      el.badge.hidden = true;
+    }
+  }
+
+  function jobRow(job) {
+    const btn = document.createElement("button");
+    btn.className = "v-job";
+    const left = document.createElement("span");
+    left.textContent = job.title;
+    const when = document.createElement("small");
+    when.textContent = new Date(job.created_at).toLocaleString("es-ES",
+      { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+    left.append(when);
+    const chip = document.createElement("span");
+    chip.className = "v-chip " + job.status;
+    chip.textContent = CHIP[job.status] || job.status;
+    btn.append(left, chip);
+    btn.addEventListener("click", () => openDoc(job.id));
+    return btn;
+  }
+
+  async function renderInbox() {
+    const jobs = await fetchJobs();
+    el.jobList.textContent = "";
+    if (!jobs.length) {
+      const p = document.createElement("p");
+      p.className = "v-hint";
+      p.textContent = "Sin encargos todavía. Dicta algo como «prepárame un plan de estudio para la clase del jueves».";
+      el.jobList.append(p);
+      return;
+    }
+    for (const job of jobs) el.jobList.append(jobRow(job));
+  }
+
+  /* minimal markdown → DOM-safe HTML (headings, lists, bold, italic, code) */
+  function mdToHtml(src) {
+    const escd = src.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const inline = (t) => t
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>")
+      .replace(/`([^`]+)`/g, "<code>$1</code>");
+    let html = "", list = null, para = [];
+    const flushP = () => { if (para.length) { html += "<p>" + inline(para.join(" ")) + "</p>"; para = []; } };
+    const flushL = () => { if (list) { html += "</" + list + ">"; list = null; } };
+    for (const raw of escd.split(/\r?\n/)) {
+      const line = raw.trimEnd();
+      const h = line.match(/^(#{1,4})\s+(.*)/);
+      const ul = line.match(/^[-*]\s+(.*)/);
+      const ol = line.match(/^\d+[.)]\s+(.*)/);
+      if (h) {
+        flushP(); flushL();
+        const lvl = Math.min(4, h[1].length + 1);
+        html += "<h" + lvl + ">" + inline(h[2]) + "</h" + lvl + ">";
+      } else if (ul) {
+        flushP();
+        if (list !== "ul") { flushL(); html += "<ul>"; list = "ul"; }
+        html += "<li>" + inline(ul[1]) + "</li>";
+      } else if (ol) {
+        flushP();
+        if (list !== "ol") { flushL(); html += "<ol>"; list = "ol"; }
+        html += "<li>" + inline(ol[1]) + "</li>";
+      } else if (!line.trim()) {
+        flushP(); flushL();
+      } else {
+        para.push(line);
+      }
+    }
+    flushP(); flushL();
+    return html;
+  }
+
+  let docText = "";
+
+  async function openDoc(id) {
+    let job;
+    try {
+      const res = await fetch(api("/api/jobs/" + id), { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      job = await res.json();
+    } catch (err) {
+      card({ kind: "error", title: "No se pudo abrir", body: String(err.message || err) });
+      return;
+    }
+    el.docTitle.textContent = job.title;
+    if (job.status === "done") {
+      docText = job.result;
+      el.docBody.innerHTML = mdToHtml(job.result);
+    } else if (job.status === "failed") {
+      docText = "";
+      el.docBody.innerHTML = mdToHtml("# No se pudo completar\n\n" + (job.error || "Error desconocido") +
+        "\n\nEl encargo era:\n\n" + job.brief);
+    } else {
+      docText = "";
+      el.docBody.innerHTML = mdToHtml("# Todavía en marcha\n\nEl encargo era:\n\n" + job.brief +
+        "\n\nVuelve en un rato — la Bandeja se actualiza sola.");
+    }
+    el.docView.hidden = false;
+  }
+
+  $("openInbox").addEventListener("click", () => {
+    el.inbox.classList.add("on");
+    renderInbox();
+    clearInterval(inboxTimer);
+    inboxTimer = setInterval(renderInbox, 5000);
+  });
+
+  function closeInbox() {
+    el.inbox.classList.remove("on");
+    clearInterval(inboxTimer);
+    refreshBadge();
+  }
+
+  $("btnInboxClose").addEventListener("click", closeInbox);
+  el.inbox.addEventListener("click", (e) => { if (e.target === el.inbox) closeInbox(); });
+
+  $("docBack").addEventListener("click", () => { el.docView.hidden = true; });
+  $("docCopy").addEventListener("click", async () => {
+    if (!docText) return;
+    try { await navigator.clipboard.writeText(docText); buzz(12); } catch { /* denied */ }
+  });
+
+  setInterval(refreshBadge, 30000);
+
   /* ---------- settings ---------- */
 
   function syncForm() {
@@ -458,4 +596,5 @@
   restore();
   idle();
   health();
+  refreshBadge();
 })();

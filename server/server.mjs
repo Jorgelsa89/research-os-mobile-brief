@@ -5,7 +5,7 @@
    speech-to-text, so both services must be running. */
 
 import { createServer } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,6 +21,98 @@ const WHISPER_PATH = process.env.WHISPER_PATH || "/v1/audio/transcriptions";
 const OLLAMA_URL = (process.env.OLLAMA_URL || "http://127.0.0.1:11434").replace(/\/+$/, "");
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3.1:8b";
 const LANGUAGE = process.env.LANGUAGE || "es";
+
+/* ---------- encargos: persistent job queue ---------- */
+
+const JOBS_DIR = join(ROOT, "server", "data", "jobs");
+await mkdir(JOBS_DIR, { recursive: true });
+
+const WORKER_SYSTEM =
+  "Eres un profesional que entrega trabajo terminado. Te llega un encargo " +
+  "dictado por voz. Produce el entregable completo en Markdown, en español, " +
+  "con estructura clara: títulos, secciones y listas (sin tablas). Empieza " +
+  "directamente con un título de nivel 1; sin preámbulos ni despedidas. Si el " +
+  "encargo requiere datos en vivo de internet que no tienes, complétalo con tu " +
+  "mejor criterio y añade al final una sección 'Para verificar' con lo que " +
+  "haya que comprobar.";
+
+const jobPath = (id) => join(JOBS_DIR, id + ".json");
+const newJobId = () => Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+
+async function saveJob(job) {
+  job.updated_at = new Date().toISOString();
+  await writeFile(jobPath(job.id), JSON.stringify(job, null, 2));
+}
+
+async function loadJobs() {
+  const jobs = [];
+  for (const f of await readdir(JOBS_DIR)) {
+    if (!f.endsWith(".json")) continue;
+    try { jobs.push(JSON.parse(await readFile(join(JOBS_DIR, f), "utf8"))); } catch { /* corrupt file */ }
+  }
+  return jobs.sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+const queue = [];
+let working = false;
+
+function pump() {
+  if (working) return;
+  const id = queue.shift();
+  if (!id) return;
+  working = true;
+
+  (async () => {
+    const job = JSON.parse(await readFile(jobPath(id), "utf8"));
+    job.status = "working";
+    await saveJob(job);
+    console.log("· encargo en marcha:", job.title);
+    try {
+      const out = await chat([
+        { role: "system", content: WORKER_SYSTEM },
+        { role: "user", content: job.brief }
+      ], { model: job.model, temperature: 0.4 });
+      job.result = (out?.message?.content || "").trim();
+      job.status = job.result ? "done" : "failed";
+      if (!job.result) job.error = "el modelo no devolvió contenido";
+    } catch (err) {
+      job.status = "failed";
+      job.error = String(err.message || err);
+    }
+    await saveJob(job);
+    console.log("· encargo " + job.status + ":", job.title);
+  })()
+    .catch((err) => console.error("✗ encargo " + id + ":", err.message))
+    .finally(() => { working = false; if (queue.length) pump(); });
+}
+
+async function createJob(brief, model) {
+  const job = {
+    id: newJobId(),
+    kind: "encargo",
+    title: brief.length > 80 ? brief.slice(0, 77) + "…" : brief,
+    brief,
+    status: "queued",
+    created_at: new Date().toISOString(),
+    model: model || OLLAMA_MODEL,
+    result: "",
+    error: ""
+  };
+  await saveJob(job);
+  queue.push(job.id);
+  pump();
+  return job;
+}
+
+// resume anything interrupted by a restart
+for (const j of await loadJobs()) {
+  if (j.status === "queued" || j.status === "working") {
+    j.status = "queued";
+    await saveJob(j);
+    queue.push(j.id);
+  }
+}
+if (queue.length) pump();
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -95,14 +187,24 @@ const TOOLS = [
   {
     type: "function",
     function: {
-      name: "investigar",
+      name: "encargar",
       description:
-        "Tarea de investigación que necesita comparar, buscar precios o revisar varias fuentes. " +
-        "No se puede responder al instante.",
+        "Encargar un trabajo que hay que PRODUCIR y entregar: un plan, un documento, un borrador, " +
+        "una comparativa, una investigación. Todo lo que no se contesta en una frase sino que se " +
+        "elabora y se revisa después.",
       parameters: {
         type: "object",
-        properties: { consulta: { type: "string", description: "Qué hay que investigar." } },
-        required: ["consulta"]
+        properties: {
+          trabajo: {
+            type: "string",
+            description: "El encargo completo, con todo el contexto que dio el usuario."
+          },
+          recordatorio_cuando: {
+            type: "string",
+            description: "Si el pedido además implica una cita o plazo, fecha y hora en ISO 8601."
+          }
+        },
+        required: ["trabajo"]
       }
     }
   }
@@ -114,7 +216,7 @@ Reglas:
 - Si es un recordatorio o una cita, usa crear_recordatorio.
 - Si es un dato que quiere guardar sin fecha, usa crear_nota.
 - Si quiere mandar un mensaje a una persona, usa preparar_mensaje y redacta tú el texto.
-- Si hay que comparar productos, buscar precios, seguros u ofertas, o revisar varias fuentes, usa investigar. Nunca intentes contestar eso de memoria.
+- Si el pedido implica PRODUCIR algo — un plan, un documento, una comparativa, una investigación, un borrador — usa encargar, con el encargo completo en 'trabajo'. Si además implica una cita o plazo, ponlo en recordatorio_cuando. Nunca intentes producir el documento tú mismo en la respuesta.
 - Para todo lo demás (preguntas simples, cálculos, conversación), usa responder.
 
 Hoy es ${new Date().toISOString().slice(0, 10)}. Responde siempre en español.`;
@@ -234,13 +336,16 @@ function route(call, spoken) {
     };
   }
 
-  if (name === "investigar") {
+  if (name === "encargar") {
+    const trabajo = args.trabajo || spoken;
+    const cal = calendarLink(trabajo, args.recordatorio_cuando);
     return {
       kind: "deferred",
-      title: "Investigando",
-      body: args.consulta || spoken,
-      speech: "Voy a mirarlo, te aviso.",
-      query: args.consulta || spoken
+      title: "Encargo",
+      body: trabajo,
+      speech: "Encargo recibido. Me pongo con ello y lo dejo en tu bandeja.",
+      links: cal ? [cal] : [],
+      encargo: trabajo
     };
   }
 
@@ -299,25 +404,28 @@ async function api(req, res, path) {
     }
 
     console.log("· herramienta:", call.function?.name);
-    return json(res, 200, route(call, text));
+    const result = route(call, text);
+    if (result.encargo) {
+      const job = await createJob(result.encargo, model);
+      result.job_id = job.id;
+      delete result.encargo;
+    }
+    return json(res, 200, result);
   }
 
-  if (path === "/api/research" && req.method === "POST") {
-    const { query, model } = JSON.parse((await body(req)).toString() || "{}");
-    if (!query) return json(res, 400, { error: "consulta vacía" });
+  if (path === "/api/jobs" && req.method === "GET") {
+    const jobs = (await loadJobs()).map(({ id, kind, title, status, created_at, updated_at, error }) =>
+      ({ id, kind, title, status, created_at, updated_at, error }));
+    return json(res, 200, { jobs });
+  }
 
-    const out = await chat([
-      {
-        role: "system",
-        content:
-          "Eres un investigador. Responde en español, breve y en viñetas, con los criterios que " +
-          "de verdad deciden la elección y una recomendación final clara. " +
-          "Termina siempre con la línea: 'Sin datos de web en vivo — verifica los precios actuales.'"
-      },
-      { role: "user", content: query }
-    ], { model, temperature: 0.4 });
-
-    return json(res, 200, { body: (out?.message?.content || "").trim() });
+  const jobMatch = path.match(/^\/api\/jobs\/([a-z0-9-]+)$/);
+  if (jobMatch && req.method === "GET") {
+    try {
+      return json(res, 200, JSON.parse(await readFile(jobPath(jobMatch[1]), "utf8")));
+    } catch {
+      return json(res, 404, { error: "encargo no encontrado" });
+    }
   }
 
   return json(res, 404, { error: "ruta desconocida" });
