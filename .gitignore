@@ -1,3 +1,7 @@
 .localtunnel.pid
 .mobile-server.pid
 localtunnel.*.log
+
+# Axon — datos sensibles (nunca versionar)
+brain/identity/*.enc
+brain/memory/short-term/
